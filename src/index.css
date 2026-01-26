@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import "tailwindcss/preflight";
 
 * {
   margin: 0;
@@ -29,13 +28,6 @@ a {
   transition: color 0.3s ease;
 }
 
-a:hover {
-  color: #333;
-}
-
-h1, h2, h3 {
-  color: #1a202c;
-}
 
 button {
   border-radius: 8px;
@@ -55,6 +47,14 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+a:hover {
+  color: #333;
+}
+
+h1, h2, h3 {
+  color: #1a202c;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -62,8 +62,5 @@ button:focus-visible {
   }
   a:hover {
     color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
   }
 }

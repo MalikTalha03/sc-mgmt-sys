@@ -1,6 +1,26 @@
-import React from "react";
+import type { InputHTMLAttributes, SelectHTMLAttributes, CSSProperties } from "react";
 
-interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+const labelStyle: CSSProperties = {
+  display: 'block',
+  fontSize: '14px',
+  fontWeight: '500',
+  color: '#374151',
+  marginBottom: '6px',
+};
+
+const inputStyle: CSSProperties = {
+  width: '100%',
+  padding: '12px 14px',
+  fontSize: '14px',
+  border: '1px solid #d1d5db',
+  borderRadius: '10px',
+  background: '#fff',
+  color: '#1f2937',
+  transition: 'border-color 0.2s',
+  outline: 'none',
+};
+
+interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   error?: string;
   helperText?: string;
@@ -10,26 +30,38 @@ export function FormInput({
   label, 
   error, 
   helperText, 
-  className = "",
+  style,
   ...props 
 }: FormInputProps) {
   return (
-    <div className="form-group">
-      <label className="form-label">
+    <div style={{ marginBottom: '16px' }}>
+      <label style={labelStyle}>
         {label}
-        {props.required && <span className="text-red-500 ml-1">*</span>}
+        {props.required && <span style={{ color: '#dc2626', marginLeft: '4px' }}>*</span>}
       </label>
       <input
-        className={`form-input ${error ? 'border-red-500' : ''} ${className}`}
+        style={{
+          ...inputStyle,
+          borderColor: error ? '#dc2626' : '#d1d5db',
+          ...style,
+        }}
+        onFocus={(e) => {
+          e.target.style.borderColor = '#4f46e5';
+          e.target.style.boxShadow = '0 0 0 3px rgba(79, 70, 229, 0.1)';
+        }}
+        onBlur={(e) => {
+          e.target.style.borderColor = error ? '#dc2626' : '#d1d5db';
+          e.target.style.boxShadow = 'none';
+        }}
         {...props}
       />
-      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-      {helperText && !error && <p className="text-xs text-gray-500 mt-1">{helperText}</p>}
+      {error && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px' }}>{error}</p>}
+      {helperText && !error && <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>{helperText}</p>}
     </div>
   );
 }
 
-interface FormSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+interface FormSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label: string;
   error?: string;
   helperText?: string;
@@ -41,17 +73,22 @@ export function FormSelect({
   error, 
   helperText,
   options,
-  className = "",
+  style,
   ...props 
 }: FormSelectProps) {
   return (
-    <div className="form-group">
-      <label className="form-label">
+    <div style={{ marginBottom: '16px' }}>
+      <label style={labelStyle}>
         {label}
-        {props.required && <span className="text-red-500 ml-1">*</span>}
+        {props.required && <span style={{ color: '#dc2626', marginLeft: '4px' }}>*</span>}
       </label>
       <select
-        className={`form-input ${error ? 'border-red-500' : ''} ${className}`}
+        style={{
+          ...inputStyle,
+          borderColor: error ? '#dc2626' : '#d1d5db',
+          cursor: 'pointer',
+          ...style,
+        }}
         {...props}
       >
         {options.map(option => (
@@ -60,8 +97,8 @@ export function FormSelect({
           </option>
         ))}
       </select>
-      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-      {helperText && !error && <p className="text-xs text-gray-500 mt-1">{helperText}</p>}
+      {error && <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px' }}>{error}</p>}
+      {helperText && !error && <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>{helperText}</p>}
     </div>
   );
 }

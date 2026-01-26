@@ -1,4 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
+import type { CSSProperties } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface DropdownOption {
   value: string;
@@ -12,8 +14,36 @@ interface DropdownProps {
   placeholder?: string;
   label?: string;
   disabled?: boolean;
-  className?: string;
 }
+
+const buttonStyle: CSSProperties = {
+  width: '100%',
+  padding: '12px 14px',
+  fontSize: '14px',
+  border: '1px solid #d1d5db',
+  borderRadius: '10px',
+  background: '#fff',
+  color: '#1f2937',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  textAlign: 'left',
+  transition: 'border-color 0.2s',
+};
+
+const dropdownMenuStyle: CSSProperties = {
+  position: 'absolute',
+  zIndex: 50,
+  width: '100%',
+  marginTop: '4px',
+  background: 'white',
+  border: '1px solid #e5e7eb',
+  borderRadius: '10px',
+  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+  maxHeight: '240px',
+  overflowY: 'auto',
+};
 
 export function Dropdown({
   options,
@@ -22,14 +52,12 @@ export function Dropdown({
   placeholder = "Select an option",
   label,
   disabled = false,
-  className = ""
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find(opt => opt.value === value);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -47,36 +75,68 @@ export function Dropdown({
   };
 
   return (
-    <div className={`form-group ${className}`}>
-      {label && <label className="form-label">{label}</label>}
-      <div className="relative" ref={dropdownRef}>
+    <div style={{ marginBottom: label ? '16px' : 0 }}>
+      {label && (
+        <label style={{
+          display: 'block',
+          fontSize: '14px',
+          fontWeight: '500',
+          color: '#374151',
+          marginBottom: '6px',
+        }}>
+          {label}
+        </label>
+      )}
+      <div style={{ position: 'relative' }} ref={dropdownRef}>
         <button
           type="button"
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
-          className={`form-input w-full text-left flex justify-between items-center ${
-            disabled ? "bg-gray-100 cursor-not-allowed" : "cursor-pointer"
-          }`}
+          style={{
+            ...buttonStyle,
+            background: disabled ? '#f3f4f6' : 'white',
+            cursor: disabled ? 'not-allowed' : 'pointer',
+            borderColor: isOpen ? '#4f46e5' : '#d1d5db',
+          }}
         >
-          <span className={selectedOption ? "text-gray-800" : "text-gray-400"}>
+          <span style={{ color: selectedOption ? '#1f2937' : '#9ca3af' }}>
             {selectedOption ? selectedOption.label : placeholder}
           </span>
-          <span className="text-gray-500">{isOpen ? "▲" : "▼"}</span>
+          {isOpen ? <ChevronUp size={18} color="#6b7280" /> : <ChevronDown size={18} color="#6b7280" />}
         </button>
 
         {isOpen && !disabled && (
-          <div className="absolute z-50 w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+          <div style={dropdownMenuStyle}>
             {options.length === 0 ? (
-              <div className="px-4 py-3 text-gray-500 text-sm">No options available</div>
+              <div style={{ padding: '12px 16px', color: '#6b7280', fontSize: '14px' }}>
+                No options available
+              </div>
             ) : (
               options.map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => handleSelect(option.value)}
-                  className={`w-full bg-white text-left px-4 py-3 transition ${
-                    option.value === value ? "font-semibold bg-gray-100" : "hover:bg-gray-50"
-                  }`}
+                  style={{
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    background: option.value === value ? '#f3f4f6' : 'white',
+                    fontWeight: option.value === value ? '600' : '400',
+                    color: '#1f2937',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (option.value !== value) {
+                      e.currentTarget.style.background = '#f9fafb';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = option.value === value ? '#f3f4f6' : 'white';
+                  }}
                 >
                   {option.label}
                 </button>

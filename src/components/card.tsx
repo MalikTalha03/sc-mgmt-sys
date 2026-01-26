@@ -1,46 +1,69 @@
-import React from "react";
+import type { ReactNode, CSSProperties } from "react";
 
 interface CardProps {
-  children: React.ReactNode;
-  className?: string;
+  children: ReactNode;
+  style?: CSSProperties;
   onClick?: () => void;
-  hover?: boolean;
 }
 
-export function Card({ children, className = "", onClick, hover = false }: CardProps) {
+export function Card({ children, style, onClick }: CardProps) {
+  const cardStyle: CSSProperties = {
+    background: 'white',
+    borderRadius: '16px',
+    border: '1px solid #e5e7eb',
+    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+    overflow: 'hidden',
+    cursor: onClick ? 'pointer' : 'default',
+    ...style,
+  };
+
   return (
-    <div
-      className={`bg-white rounded-xl border border-gray-200 shadow-sm ${hover ? 'hover:shadow-md hover:border-gray-300' : ''} ${onClick ? 'cursor-pointer' : ''} transition-all duration-200 ${className}`}
-      onClick={onClick}
-    >
+    <div style={cardStyle} onClick={onClick}>
       {children}
     </div>
   );
 }
 
- 
 interface CardHeaderProps {
-  children: React.ReactNode;
-  className?: string;
-  action?: React.ReactNode;
+  children: ReactNode;
+  action?: ReactNode;
 }
 
-export function CardHeader({ children, className = "", action }: CardHeaderProps) {
+export function CardHeader({ children, action }: CardHeaderProps) {
+  const headerStyle: CSSProperties = {
+    padding: '20px 24px',
+    borderBottom: '1px solid #e5e7eb',
+    background: '#f9fafb',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  };
+
+  const titleStyle: CSSProperties = {
+    fontSize: '16px',
+    fontWeight: '600',
+    color: '#111827',
+    margin: 0,
+  };
+
   return (
-    <div className={`px-6 py-4 border-b border-gray-200 bg-gray-50 rounded-t-xl ${className}`}>
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">{children}</h3>
-        {action && <div>{action}</div>}
-      </div>
+    <div style={headerStyle}>
+      <h3 style={titleStyle}>{children}</h3>
+      {action && <div>{action}</div>}
     </div>
   );
 }
 
 interface CardContentProps {
-  children: React.ReactNode;
-  className?: string;
+  children: ReactNode;
+  style?: CSSProperties;
 }
 
-export function CardContent({ children, className = "" }: CardContentProps) {
-  return <div className={`p-6 ${className}`}>{children}</div>;
+export function CardContent({ children, style }: CardContentProps) {
+  const contentStyle: CSSProperties = {
+    padding: '24px',
+    ...style,
+  };
+
+  return <div style={contentStyle}>{children}</div>;
 }

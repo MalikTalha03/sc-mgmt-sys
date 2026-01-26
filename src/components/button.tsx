@@ -1,41 +1,60 @@
-import React from "react";
+import type { ReactNode, ButtonHTMLAttributes, CSSProperties } from "react";
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "danger" | "ghost";
-  children: React.ReactNode;
+  children: ReactNode;
   fullWidth?: boolean;
   size?: "sm" | "md" | "lg";
 }
+
+const baseStyle: CSSProperties = {
+  fontWeight: '500',
+  borderRadius: '10px',
+  border: 'none',
+  cursor: 'pointer',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '6px',
+  transition: 'all 0.2s',
+};
+
+const sizes: Record<string, CSSProperties> = {
+  sm: { fontSize: '13px', padding: '8px 14px' },
+  md: { fontSize: '14px', padding: '10px 18px' },
+  lg: { fontSize: '15px', padding: '12px 24px' },
+};
+
+const variants: Record<string, CSSProperties> = {
+  primary: { background: '#4f46e5', color: 'white' },
+  secondary: { background: '#f3f4f6', color: '#374151' },
+  danger: { background: '#dc2626', color: 'white' },
+  ghost: { background: 'transparent', color: '#6b7280' },
+};
 
 export function Button({ 
   variant = "primary", 
   children, 
   fullWidth = false,
   size = "md",
-  className = "",
+  disabled,
+  style,
   ...props 
 }: ButtonProps) {
-  const baseClasses = "font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2";
-  
-  const sizeClasses = {
-    sm: "text-xs px-3 py-1.5",
-    md: "text-sm px-4 py-2",
-    lg: "text-base px-6 py-3"
+  const buttonStyle: CSSProperties = {
+    ...baseStyle,
+    ...sizes[size],
+    ...variants[variant],
+    width: fullWidth ? '100%' : 'auto',
+    opacity: disabled ? 0.5 : 1,
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    ...style,
   };
-  
-  const variantClasses = {
-    primary: "bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500 shadow-sm hover:shadow",
-    secondary: "bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-400 border border-gray-300",
-    danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm hover:shadow",
-    ghost: "text-gray-600 hover:bg-gray-100 focus:ring-gray-400"
-  };
-
-  const widthClass = fullWidth ? "w-full" : "";
-  const disabledClass = props.disabled ? "opacity-50 cursor-not-allowed" : "";
 
   return (
     <button
-      className={`${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${widthClass} ${disabledClass} ${className}`}
+      style={buttonStyle}
+      disabled={disabled}
       {...props}
     >
       {children}

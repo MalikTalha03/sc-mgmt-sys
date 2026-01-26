@@ -37,11 +37,14 @@ export async function createStudent(studentData: Omit<Student, "createdAt">): Pr
  */
 export async function getStudentById(studentId: string): Promise<Student | null> {
   try {
-    const docRef = doc(db, COLLECTION_NAME, studentId);
-    const docSnap = await getDoc(docRef);
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      where("studentId", "==", studentId)
+    );
+    const querySnapshot = await getDocs(q);
     
-    if (docSnap.exists()) {
-      return { ...docSnap.data(), studentId: docSnap.id } as Student;
+    if (!querySnapshot.empty) {
+      return querySnapshot.docs[0].data() as Student;
     }
     return null;
   } catch (error) {
@@ -56,10 +59,11 @@ export async function getStudentById(studentId: string): Promise<Student | null>
 export async function getAllStudents(): Promise<Student[]> {
   try {
     const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
+    console.log(querySnapshot.docs);
     return querySnapshot.docs.map(doc => ({
-      ...doc.data(),
-      studentId: doc.id,
+      ...doc.data()
     })) as Student[];
+    
   } catch (error) {
     console.error("Error getting students:", error);
     throw error;
@@ -77,8 +81,7 @@ export async function getStudentsByDepartment(departmentCode: string): Promise<S
     );
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({
-      ...doc.data(),
-      studentId: doc.id,
+      ...doc.data()
     })) as Student[];
   } catch (error) {
     console.error("Error getting students by department:", error);
@@ -97,8 +100,7 @@ export async function getStudentsBySemester(semester: number): Promise<Student[]
     );
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({
-      ...doc.data(),
-      studentId: doc.id,
+      ...doc.data()
     })) as Student[];
   } catch (error) {
     console.error("Error getting students by semester:", error);
@@ -114,8 +116,18 @@ export async function updateStudent(
   updates: Partial<Omit<Student, "studentId" | "createdAt">>
 ): Promise<void> {
   try {
-    const docRef = doc(db, COLLECTION_NAME, studentId);
-    await updateDoc(docRef, updates);
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      where("studentId", "==", studentId)
+    );
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      const docRef = querySnapshot.docs[0].ref;
+      await updateDoc(docRef, updates);
+    } else {
+      throw new Error("Student not found");
+    }
   } catch (error) {
     console.error("Error updating student:", error);
     throw error;
@@ -127,8 +139,18 @@ export async function updateStudent(
  */
 export async function deleteStudent(studentId: string): Promise<void> {
   try {
-    const docRef = doc(db, COLLECTION_NAME, studentId);
-    await deleteDoc(docRef);
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      where("studentId", "==", studentId)
+    );
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      const docRef = querySnapshot.docs[0].ref;
+      await deleteDoc(docRef);
+    } else {
+      throw new Error("Student not found");
+    }
   } catch (error) {
     console.error("Error deleting student:", error);
     throw error;
@@ -143,8 +165,18 @@ export async function updateStudentCreditHours(
   creditHours: number
 ): Promise<void> {
   try {
-    const docRef = doc(db, COLLECTION_NAME, studentId);
-    await updateDoc(docRef, { currentCreditHours: creditHours });
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      where("studentId", "==", studentId)
+    );
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      const docRef = querySnapshot.docs[0].ref;
+      await updateDoc(docRef, { currentCreditHours: creditHours });
+    } else {
+      throw new Error("Student not found");
+    }
   } catch (error) {
     console.error("Error updating credit hours:", error);
     throw error;

@@ -13,18 +13,46 @@ import {
 } from "firebase/firestore";
 import { db } from "./db";
 import type { Enrollment } from "../models/enrollment";
+import { getStudentById, updateStudentCreditHours } from "./studentService";
+import { getCourseByCode } from "./courseService";
 
 const COLLECTION_NAME = "enrollments";
 
 /**
- * Create a new enrollment
+ * Create a new enrollment with credit hour validation
  */
 export async function createEnrollment(enrollmentData: Omit<Enrollment, "createdAt">): Promise<string> {
   try {
     // Check if enrollment already exists
     const existing = await getEnrollment(enrollmentData.studentId, enrollmentData.courseCode);
     if (existing) {
-      throw new Error("Student already enrolled in this course");
+      // Allow re-application only if the previous enrollment was rejected
+      if (existing.status === "rejected") {
+        // Delete the rejected enrollment so a new one can be created
+        await deleteEnrollment(enrollmentData.studentId, enrollmentData.courseCode);
+      } else if (existing.status === "pending") {
+        throw new Error("Enrollment request already pending for this course");
+      } else if (existing.status === "approved") {
+        throw new Error("Student already enrolled in this course");
+      }
+    }
+
+    // Get student and course to validate credit hours
+    const student = await getStudentById(enrollmentData.studentId);
+    const course = await getCourseByCode(enrollmentData.courseCode);
+
+    if (!student) {
+      throw new Error("Student not found");
+    }
+
+    if (!course) {
+      throw new Error("Course not found");
+    }
+
+    // Check if student has enough credit hours available
+    const availableCreditHours = student.maxCreditHours - student.currentCreditHours;
+    if (course.creditHours > availableCreditHours) {
+      throw new Error(`Not enough credit hours available. Required: ${course.creditHours}, Available: ${availableCreditHours}`);
     }
 
     const docRef = await addDoc(collection(db, COLLECTION_NAME), {
@@ -130,7 +158,7 @@ export async function getPendingEnrollments(): Promise<Enrollment[]> {
 }
 
 /**
- * Update enrollment status
+ * Update enrollment status and manage credit hours
  */
 export async function updateEnrollmentStatus(
   studentId: string,
@@ -146,8 +174,31 @@ export async function updateEnrollmentStatus(
     const querySnapshot = await getDocs(q);
     
     if (!querySnapshot.empty) {
+      const currentEnrollment = querySnapshot.docs[0].data() as Enrollment;
+      const previousStatus = currentEnrollment.status;
       const docRef = querySnapshot.docs[0].ref;
       await updateDoc(docRef, { status });
+
+      // Update credit hours based on status change
+      const student = await getStudentById(studentId);
+      const course = await getCourseByCode(courseCode);
+      
+      if (student && course) {
+        let newCreditHours = student.currentCreditHours;
+        
+        // If approving enrollment, add credit hours
+        if (status === "approved" && previousStatus !== "approved") {
+          newCreditHours = student.currentCreditHours + course.creditHours;
+        }
+        // If changing from approved to something else, subtract credit hours
+        else if (previousStatus === "approved" && status !== "approved") {
+          newCreditHours = Math.max(0, student.currentCreditHours - course.creditHours);
+        }
+        
+        if (newCreditHours !== student.currentCreditHours) {
+          await updateStudentCreditHours(studentId, newCreditHours);
+        }
+      }
     } else {
       throw new Error("Enrollment not found");
     }
@@ -158,7 +209,7 @@ export async function updateEnrollmentStatus(
 }
 
 /**
- * Delete an enrollment
+ * Delete an enrollment and update credit hours if it was approved
  */
 export async function deleteEnrollment(studentId: string, courseCode: string): Promise<void> {
   try {
@@ -170,7 +221,20 @@ export async function deleteEnrollment(studentId: string, courseCode: string): P
     const querySnapshot = await getDocs(q);
     
     if (!querySnapshot.empty) {
+      const enrollment = querySnapshot.docs[0].data() as Enrollment;
       const docRef = querySnapshot.docs[0].ref;
+      
+      // If enrollment was approved, subtract credit hours before deleting
+      if (enrollment.status === "approved") {
+        const student = await getStudentById(studentId);
+        const course = await getCourseByCode(courseCode);
+        
+        if (student && course) {
+          const newCreditHours = Math.max(0, student.currentCreditHours - course.creditHours);
+          await updateStudentCreditHours(studentId, newCreditHours);
+        }
+      }
+      
       await deleteDoc(docRef);
     } else {
       throw new Error("Enrollment not found");

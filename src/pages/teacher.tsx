@@ -299,6 +299,7 @@ export default function TeacherPage() {
                                 <Button
                                   variant="primary"
                                   size="sm"
+                                  className="border-2"
                                   onClick={() => handleCourseSelect(courseCode)}
                                 >
                                   {selectedCourse === courseCode ? "Selected" : "View Grades"}

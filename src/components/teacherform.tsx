@@ -1,9 +1,10 @@
-import React from "react";
+import { useState } from "react";
 import { FormInput } from "./formInput";
 import { Button } from "./button";
 import { Card, CardHeader } from "./card";
 import { Dropdown } from "./dropdown";
 import type { Department } from "../models/department";
+import { UserPlus } from "lucide-react";
 
 interface TeacherFormProps {
     onSubmit?: (data: any) => void;
@@ -11,7 +12,7 @@ interface TeacherFormProps {
 }
 
 export function TeacherForm({ onSubmit, departments = [] }: TeacherFormProps) {
-    const [formData, setFormData] = React.useState({
+    const [formData, setFormData] = useState({
         name: "",
         email: "",
         departmentCode: "",
@@ -29,7 +30,6 @@ export function TeacherForm({ onSubmit, departments = [] }: TeacherFormProps) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSubmit?.(formData);
-        // Reset form
         setFormData({
             name: "",
             email: "",
@@ -40,8 +40,8 @@ export function TeacherForm({ onSubmit, departments = [] }: TeacherFormProps) {
 
     return (
         <Card>
-            <CardHeader className="p-2">Add New Teacher</CardHeader>
-            <form className="space-y-5 p-6 grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
+            <CardHeader>Add New Teacher</CardHeader>
+            <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
                 <FormInput
                     label="Full Name"
                     type="text"
@@ -60,33 +60,28 @@ export function TeacherForm({ onSubmit, departments = [] }: TeacherFormProps) {
                     required
                 />
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Department Code
-                    </label>
-                    <Dropdown
-                        options={departments.map(d => ({ value: d.code, label: `${d.name} (${d.code})` }))}
-                        value={formData.departmentCode}
-                        onChange={(value) => setFormData({ ...formData, departmentCode: value })}
-                        placeholder="Select department"
-                    />
-                </div>
+                <Dropdown
+                    label="Department"
+                    options={departments.map(d => ({ value: d.code, label: `${d.name} (${d.code})` }))}
+                    value={formData.departmentCode}
+                    onChange={(value) => setFormData({ ...formData, departmentCode: value })}
+                    placeholder="Select department"
+                />
                 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Designation
-                    </label>
-                    <Dropdown
-                        options={designationOptions}
-                        value={formData.designation}
-                        onChange={(value) => setFormData({ ...formData, designation: value })}
-                        placeholder="Select designation"
-                    />
-                </div>
+                <Dropdown
+                    label="Designation"
+                    options={designationOptions}
+                    value={formData.designation}
+                    onChange={(value) => setFormData({ ...formData, designation: value })}
+                    placeholder="Select designation"
+                />
 
-                <Button type="submit" fullWidth>
-                    Add Teacher
-                </Button>
+                <div style={{ marginTop: '8px' }}>
+                    <Button type="submit" fullWidth>
+                        <UserPlus size={18} />
+                        Add Teacher
+                    </Button>
+                </div>
             </form>
         </Card>
     );

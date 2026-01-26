@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardHeader } from "./card";
 import { Button } from "./button";
 import { FormInput } from "./formInput";
+import { Building2 } from "lucide-react";
 
 interface DepartmentFormProps {
   onSubmit: (data: {
@@ -26,8 +27,8 @@ export function DepartmentForm({ onSubmit }: DepartmentFormProps) {
 
   return (
     <Card>
-      <CardHeader className="p-2">Add New Department</CardHeader>
-      <form onSubmit={handleSubmit} className="space-y-5 p-6 grid grid-cols-2 gap-4">
+      <CardHeader>Add New Department</CardHeader>
+      <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
         <FormInput
           label="Department Code"
           type="text"
@@ -46,20 +47,38 @@ export function DepartmentForm({ onSubmit }: DepartmentFormProps) {
           required
         />
 
-        <div className="flex items-center col-span-2">
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '8px',
+          marginBottom: '20px'
+        }}>
           <input
             type="checkbox"
             id="isActive"
             checked={formData.isActive}
             onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-            className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+            style={{ 
+              width: '18px', 
+              height: '18px',
+              accentColor: '#4f46e5',
+              cursor: 'pointer'
+            }}
           />
-          <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700">
+          <label 
+            htmlFor="isActive" 
+            style={{ 
+              fontSize: '14px', 
+              color: '#374151',
+              cursor: 'pointer'
+            }}
+          >
             Active Department
           </label>
         </div>
 
         <Button type="submit" fullWidth>
+          <Building2 size={18} />
           Add Department
         </Button>
       </form>

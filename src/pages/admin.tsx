@@ -7,6 +7,18 @@ import { Card, CardHeader } from "../components/card";
 import { Button } from "../components/button";
 import { Dropdown } from "../components/dropdown";
 import {
+  Users,
+  GraduationCap,
+  BookOpen,
+  Building2,
+  ClipboardList,
+  AlertCircle,
+  Trash2,
+  Check,
+  X,
+  Loader2
+} from "lucide-react";
+import {
   getAllStudents,
   createStudent,
   deleteStudent,
@@ -322,60 +334,127 @@ export default function AdminPage() {
   const availableCourses = courses.filter(course => !isEnrolled(course.code));
 
   const tabs = [
-    { id: "students", label: "Students" },
-    { id: "teachers", label: "Teachers" },
-    { id: "courses", label: "Courses" },
-    { id: "departments", label: "Departments" },
-    { id: "enrollments", label: "Enrollments" },
+    { id: "students", label: "Students", icon: GraduationCap },
+    { id: "teachers", label: "Teachers", icon: Users },
+    { id: "courses", label: "Courses", icon: BookOpen },
+    { id: "departments", label: "Departments", icon: Building2 },
+    { id: "enrollments", label: "Enrollments", icon: ClipboardList },
   ];
 
+  const containerStyle: React.CSSProperties = {
+    minHeight: '100vh',
+    background: '#f3f4f6',
+    paddingLeft: '280px',
+  };
+
+  const contentStyle: React.CSSProperties = {
+    maxWidth: '1400px',
+    margin: '0 auto',
+    padding: '32px 24px',
+  };
+
+  const headerStyle: React.CSSProperties = {
+    marginBottom: '32px',
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: '28px',
+    fontWeight: '700',
+    color: '#111827',
+    margin: '0 0 8px 0',
+  };
+
+  const subtitleStyle: React.CSSProperties = {
+    color: '#6b7280',
+    fontSize: '15px',
+    margin: 0,
+  };
+
+  const tabsContainerStyle: React.CSSProperties = {
+    display: 'flex',
+    gap: '8px',
+    background: 'white',
+    padding: '8px',
+    borderRadius: '14px',
+    marginBottom: '32px',
+    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+  };
+
+  const itemCardStyle: React.CSSProperties = {
+    padding: '20px',
+    background: 'white',
+    borderRadius: '12px',
+    border: '1px solid #e5e7eb',
+    marginBottom: '12px',
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="max-w-7xl mx-auto px-6 py-10">
+    <div style={containerStyle}>
+      <div style={contentStyle}>
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2 tracking-tight">Admin Dashboard</h1>
-          <p className="text-gray-600">Comprehensive management of students, faculty, courses, and departments</p>
+        <div style={headerStyle}>
+          <h1 style={titleStyle}>Admin Dashboard</h1>
+          <p style={subtitleStyle}>Manage students, teachers, courses, and departments</p>
         </div>
 
         {/* Pending Enrollments Alert */}
         {pendingEnrollmentCount > 0 && activeTab !== "enrollments" && (
-          <div className="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div>
-                  <h3 className="text-sm font-semibold text-yellow-800">
-                    Pending Enrollment Requests
-                  </h3>
-                  <p className="text-sm text-yellow-700">
-                    You have {pendingEnrollmentCount} enrollment request{pendingEnrollmentCount !== 1 ? 's' : ''} waiting for approval
-                  </p>
-                </div>
+          <div style={{
+            marginBottom: '24px',
+            padding: '16px 20px',
+            background: '#fef3c7',
+            border: '1px solid #fcd34d',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <AlertCircle size={20} color="#d97706" />
+              <div>
+                <p style={{ margin: 0, fontWeight: '600', color: '#92400e', fontSize: '14px' }}>
+                  Pending Enrollment Requests
+                </p>
+                <p style={{ margin: 0, color: '#a16207', fontSize: '13px' }}>
+                  You have {pendingEnrollmentCount} request{pendingEnrollmentCount !== 1 ? 's' : ''} waiting
+                </p>
               </div>
-              <button
-                onClick={() => setActiveTab("enrollments")}
-                className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm font-medium transition"
-              >
-                Review Now
-              </button>
             </div>
+            <Button variant="primary" size="sm" onClick={() => setActiveTab("enrollments")}>
+              Review Now
+            </Button>
           </div>
         )}
 
         {/* Tabs */}
-        <div className="bg-white rounded-xl shadow-sm p-4 mb-8 flex gap-4 w-full">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`px-8 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 "
-                }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div style={tabsContainerStyle}>
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px 20px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: isActive ? '#4f46e5' : 'transparent',
+                  color: isActive ? 'white' : '#6b7280',
+                  fontWeight: '500',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <Icon size={18} />
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Students Tab */}

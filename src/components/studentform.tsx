@@ -37,60 +37,68 @@ export function StudentForm({ onSubmit, departments = [] }: StudentFormProps) {
     return (
         <Card >
             <CardHeader className="p-2">Add New Student</CardHeader>
-            <form className="space-y-5 p-6 grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
-                <FormInput
-                    label="Student ID"
-                    type="text"
-                    placeholder="Enter student ID"
-                    value={formData.studentId}
-                    onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
-                    required
-                />
-                
-                <FormInput
-                    label="Full Name"
-                    type="text"
-                    placeholder="Enter student's full name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                />
+            <form onSubmit={handleSubmit}>
+                <div className="grid grid-cols-2 gap-4 p-6">
+                    <FormInput
+                        label="Student ID"
+                        type="text"
+                        placeholder="Enter student ID"
+                        value={formData.studentId}
+                        onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
+                        required
+                    />
 
-                <FormInput
-                    label="Email Address"
-                    type="email"
-                    placeholder="student@university.edu"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    required
-                />
+                    <FormInput
+                        label="Full Name"
+                        type="text"
+                        placeholder="Enter student's full name"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        required
+                    />
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Department Code
-                    </label>
-                    <Dropdown
-                        options={departments.map(d => ({ value: d.code, label: `${d.name} (${d.code})` }))}
-                        value={formData.departmentCode}
-                        onChange={(value) => setFormData({ ...formData, departmentCode: value })}
-                        placeholder="Select department"
+                    <FormInput
+                        label="Email Address"
+                        type="email"
+                        placeholder="student@university.edu"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        required
+                    />
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb- form-label">
+                            Department Code*
+                        </label>
+                        <Dropdown
+                            options={departments.map(d => ({
+                                value: d.code,
+                                label: `${d.name} (${d.code})`
+                            }))}
+                            value={formData.departmentCode}
+                            onChange={(value) => setFormData({ ...formData, departmentCode: value })}
+                            placeholder="Select department"
+                        />
+                    </div>
+
+                    <FormInput
+                        label="Semester"
+                        type="number"
+                        min={1}
+                        max={8}
+                        value={formData.semester}
+                        onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
+                        required
                     />
                 </div>
-                
-                <FormInput
-                    label="Semester"
-                    type="number"
-                    min={1}
-                    max={8}
-                    value={formData.semester}
-                    onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
-                    required
-                />
 
-                <Button type="submit" fullWidth>
-                    Add Student
-                </Button>
+                <div className="pt-0 p-6 grid grid-cols-2">
+                    <Button type="submit" className="w-full">
+                        Add Student
+                    </Button>
+                </div>
             </form>
+
         </Card>
     );
 }

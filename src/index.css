@@ -8,57 +8,15 @@
 
 :root {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.6;
-  font-weight: 400;
-  color-scheme: light;
 }
 
-body {
-  background: #f8f9fa;
-  min-height: 100vh;
-  color: #333;
-}
-
-a {
-  font-weight: 500;
-  color: #666;
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-
-button {
-  border-radius: 8px;
+/* Reset input styles to allow Tailwind to work */
+input {
+  background: transparent;
   border: none;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: none;
 }
 
-a:hover {
-  color: #333;
-}
-
-h1, h2, h3 {
-  color: #1a202c;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
+input:focus {
+  outline: none;
 }

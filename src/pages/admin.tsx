@@ -459,28 +459,38 @@ export default function AdminPage() {
 
         {/* Students Tab */}
         {activeTab === "students" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px' }}>
+            <div>
               <StudentForm onSubmit={handleCreateStudent} departments={departments} />
             </div>
-            <div className="lg:col-span-2">
+            <div>
               <Card>
-                <CardHeader>All Students</CardHeader>
-                <div className="p-6 space-y-4">
+                <CardHeader>All Students ({students.length})</CardHeader>
+                <div style={{ padding: '20px' }}>
                   {loading ? (
-                    <p className="text-center text-gray-500 py-8">Loading...</p>
+                    <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                      <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 8px' }} />
+                      <p>Loading...</p>
+                    </div>
                   ) : students.length === 0 ? (
-                    <p className="text-center text-gray-500 py-8">No students found</p>
+                    <p style={{ textAlign: 'center', color: '#6b7280', padding: '40px' }}>No students found</p>
                   ) : (
                     students.map((student) => (
-                      <div key={student.studentId} className="p-6 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-200">
-                        <div className="flex items-center justify-between">
+                      <div key={student.studentId} style={itemCardStyle}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <div>
-                            <h3 className="text-lg font-bold text-gray-900">{student.name}</h3>
-                            <p className="text-sm text-gray-600">ID: {student.studentId}</p>
-                            <p className="text-sm text-gray-600">Department: {student.departmentCode} | Semester: {student.semester}</p>
+                            <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '600', color: '#111827' }}>
+                              {student.name}
+                            </h3>
+                            <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>
+                              ID: {student.studentId} • {student.departmentCode} • Semester {student.semester}
+                            </p>
+                            <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#6b7280' }}>
+                              Credits: {student.currentCreditHours}/{student.maxCreditHours}
+                            </p>
                           </div>
                           <Button variant="danger" size="sm" onClick={() => handleDeleteStudent(student.studentId)}>
+                            <Trash2 size={14} />
                             Delete
                           </Button>
                         </div>
@@ -495,29 +505,38 @@ export default function AdminPage() {
 
         {/* Teachers Tab */}
         {activeTab === "teachers" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px' }}>
+            <div>
               <TeacherForm onSubmit={handleCreateTeacher} departments={departments} />
             </div>
-            <div className="lg:col-span-2">
+            <div>
               <Card>
-                <CardHeader>All Teachers</CardHeader>
-                <div className="p-6 space-y-4">
+                <CardHeader>All Teachers ({teachers.length})</CardHeader>
+                <div style={{ padding: '20px' }}>
                   {loading ? (
-                    <p className="text-center text-gray-500 py-8">Loading...</p>
+                    <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                      <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 8px' }} />
+                      <p>Loading...</p>
+                    </div>
                   ) : teachers.length === 0 ? (
-                    <p className="text-center text-gray-500 py-8">No teachers found</p>
+                    <p style={{ textAlign: 'center', color: '#6b7280', padding: '40px' }}>No teachers found</p>
                   ) : (
                     teachers.map((teacher) => (
-                      <div key={teacher.id} className="p-6 bg-gradient-to-r from-gray-50 to-emerald-50 rounded-xl border border-gray-200">
-                        <div className="flex items-center justify-between">
+                      <div key={teacher.id} style={itemCardStyle}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <div>
-                            <h3 className="text-lg font-bold text-gray-900">{teacher.name}</h3>
-                            <p className="text-sm text-gray-600">Department: {teacher.departmentCode}</p>
-                            <p className="text-sm text-gray-600">Designation: {teacher.designation}</p>
-                            <p className="text-sm text-gray-600">Courses: {teacher.assignedCourses.length}</p>
+                            <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '600', color: '#111827' }}>
+                              {teacher.name}
+                            </h3>
+                            <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>
+                              {teacher.designation} • {teacher.departmentCode}
+                            </p>
+                            <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#6b7280' }}>
+                              Courses: {teacher.assignedCourses.length}
+                            </p>
                           </div>
                           <Button variant="danger" size="sm" onClick={() => handleDeleteTeacher(teacher.id!)}>
+                            <Trash2 size={14} />
                             Delete
                           </Button>
                         </div>
@@ -532,28 +551,35 @@ export default function AdminPage() {
 
         {/* Courses Tab */}
         {activeTab === "courses" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px' }}>
+            <div>
               <CourseForm onSubmit={handleCreateCourse} departments={departments} />
             </div>
-            <div className="lg:col-span-2">
+            <div>
               <Card>
-                <CardHeader className="p-4">All Courses</CardHeader>
-                <div className="p-6 space-y-4">
+                <CardHeader>All Courses ({courses.length})</CardHeader>
+                <div style={{ padding: '20px' }}>
                   {loading ? (
-                    <p className="text-center text-gray-500 py-8">Loading...</p>
+                    <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                      <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 8px' }} />
+                      <p>Loading...</p>
+                    </div>
                   ) : courses.length === 0 ? (
-                    <p className="text-center text-gray-500 py-8">No courses found</p>
+                    <p style={{ textAlign: 'center', color: '#6b7280', padding: '40px' }}>No courses found</p>
                   ) : (
                     courses.map((course) => (
-                      <div key={course.code} className="p-6 bg-gradient-to-r from-gray-50 to-purple-50 rounded-xl border border-gray-200">
-                        <div className="flex items-center justify-between">
+                      <div key={course.code} style={itemCardStyle}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <div>
-                            <h3 className="text-lg font-bold text-gray-900">{course.title}</h3>
-                            <p className="text-sm text-gray-600">Code: {course.code}</p>
-                            <p className="text-sm text-gray-600">Department: {course.departmentCode} | Credits: {course.creditHours} | Semester: {course.semester}</p>
+                            <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '600', color: '#111827' }}>
+                              {course.title}
+                            </h3>
+                            <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>
+                              {course.code} • {course.departmentCode} • {course.creditHours} Credits • Semester {course.semester}
+                            </p>
                           </div>
                           <Button variant="danger" size="sm" onClick={() => handleDeleteCourse(course.code)}>
+                            <Trash2 size={14} />
                             Delete
                           </Button>
                         </div>
@@ -568,36 +594,53 @@ export default function AdminPage() {
 
         {/* Departments Tab */}
         {activeTab === "departments" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px' }}>
+            <div>
               <DepartmentForm onSubmit={handleCreateDepartment} />
             </div>
-            <div className="lg:col-span-2">
+            <div>
               <Card>
-                <CardHeader className="p-4">All Departments</CardHeader>
-                <div className="p-6 grid grid-cols-3 gap-4">
+                <CardHeader>All Departments ({departments.length})</CardHeader>
+                <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
                   {loading ? (
-                    <p className="text-center text-gray-500 py-8">Loading...</p>
+                    <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                      <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 8px' }} />
+                      <p>Loading...</p>
+                    </div>
                   ) : departments.length === 0 ? (
-                    <p className="text-center text-gray-500 py-8">No departments found</p>
+                    <p style={{ gridColumn: 'span 2', textAlign: 'center', color: '#6b7280', padding: '40px' }}>No departments found</p>
                   ) : (
                     departments.map((dept) => (
-                      <div key={dept.code} className="p-6 bg-gradient-to-r from-gray-50 to-indigo-50 rounded-xl border border-gray-200">
-                        <div className="flex items-center justify-between mb-4">
+                      <div key={dept.code} style={{
+                        padding: '20px',
+                        background: 'white',
+                        borderRadius: '12px',
+                        border: '1px solid #e5e7eb',
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
                           <div>
-                            <h3 className="text-xl font-bold text-gray-900">{dept.name}</h3>
-                            <p className="text-sm text-gray-600">Code: {dept.code}</p>
+                            <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '600', color: '#111827' }}>
+                              {dept.name}
+                            </h3>
+                            <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>Code: {dept.code}</p>
                           </div>
-                          <span>
+                          <span style={{
+                            padding: '4px 10px',
+                            borderRadius: '20px',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            background: dept.isActive ? '#dcfce7' : '#fee2e2',
+                            color: dept.isActive ? '#166534' : '#991b1b',
+                          }}>
                             {dept.isActive ? "Active" : "Inactive"}
                           </span>
                         </div>
-                        <div className="flex gap-3">
+                        <div style={{ display: 'flex', gap: '8px' }}>
                           <Button variant="secondary" size="sm" onClick={() => toggleDepartmentStatus(dept.code).then(loadData)}>
                             {dept.isActive ? "Deactivate" : "Activate"}
                           </Button>
                           <Button variant="danger" size="sm" onClick={() => handleDeleteDepartment(dept.code)}>
-                            Delete
+                            <Trash2 size={14} />
                           </Button>
                         </div>
                       </div>
@@ -611,61 +654,75 @@ export default function AdminPage() {
 
         {/* Enrollments Tab */}
         {activeTab === "enrollments" && (
-          <div className="space-y-6">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             {/* New Enrollment Request Form */}
-            <div className="bg-white rounded-xl shadow-sm">
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900">Request New Enrollment</h2>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mb-4">
-                  <div className="w-4/12">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Student
-                    </label>
-                    <Dropdown
-                      options={students.map(s => ({ value: s.studentId, label: `${s.name} (${s.studentId})` }))}
-                      value={selectedStudent}
-                      onChange={handleStudentSelect}
-                      placeholder="Choose a student"
-                    />
-                  </div>
-                  <div className="w-4/12">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Course
-                    </label>
-                    <Dropdown
-                      options={availableCourses.map(c => ({
-                        value: c.code,
-                        label: `${c.title} (${c.code})`
-                      }))}
-                      value={selectedCourse}
-                      onChange={setSelectedCourse}
-                      placeholder={selectedStudent ? "Choose a course" : "Select student first"}
-                      disabled={!selectedStudent}
-                    />
-                  </div>
+            <Card>
+              <CardHeader>Request New Enrollment</CardHeader>
+              <div style={{ padding: '24px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                  <Dropdown
+                    label="Select Student"
+                    options={students.map(s => ({ value: s.studentId, label: `${s.name} (${s.studentId})` }))}
+                    value={selectedStudent}
+                    onChange={handleStudentSelect}
+                    placeholder="Choose a student"
+                  />
+                  <Dropdown
+                    label="Select Course"
+                    options={availableCourses.map(c => ({
+                      value: c.code,
+                      label: `${c.title} (${c.code})`
+                    }))}
+                    value={selectedCourse}
+                    onChange={setSelectedCourse}
+                    placeholder={selectedStudent ? "Choose a course" : "Select student first"}
+                    disabled={!selectedStudent}
+                  />
                 </div>
 
                 {selectedStudent && studentEnrollments.length > 0 && (
-                  <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-4">
+                  <div style={{
+                    marginBottom: '20px',
+                    padding: '16px',
+                    background: '#f9fafb',
+                    borderRadius: '12px',
+                  }}>
+                    <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
                       Current Enrollments for {getStudentById(selectedStudent)?.name}
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       {studentEnrollments.map(enrollment => {
                         const course = getCourseByCode(enrollment.courseCode);
+                        const statusColors: Record<string, { bg: string; color: string }> = {
+                          approved: { bg: '#dcfce7', color: '#166534' },
+                          pending: { bg: '#fef3c7', color: '#92400e' },
+                          rejected: { bg: '#fee2e2', color: '#991b1b' },
+                        };
+                        const colors = statusColors[enrollment.status] || statusColors.pending;
                         return (
-                          <div key={enrollment.courseCode} className="p-3 bg-white rounded-lg border border-gray-200">
-                            <div className="flex items-center justify-between p-4">
-                              <div className="text-lg font-medium text-gray-900">{`${course?.title} (${enrollment.courseCode})`}
-                              </div>
-                              <span
-
-                              >
-                                {enrollment.status.toUpperCase()}
-                              </span>
-                            </div>
+                          <div key={enrollment.courseCode} style={{
+                            padding: '10px 14px',
+                            background: 'white',
+                            borderRadius: '8px',
+                            border: '1px solid #e5e7eb',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                          }}>
+                            <span style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>
+                              {course?.title} ({enrollment.courseCode})
+                            </span>
+                            <span style={{
+                              padding: '2px 8px',
+                              borderRadius: '10px',
+                              fontSize: '11px',
+                              fontWeight: '600',
+                              textTransform: 'uppercase',
+                              background: colors.bg,
+                              color: colors.color,
+                            }}>
+                              {enrollment.status}
+                            </span>
                           </div>
                         );
                       })}
@@ -682,25 +739,25 @@ export default function AdminPage() {
                   {loading ? "Processing..." : "Submit Enrollment Request"}
                 </Button>
               </div>
-            </div>
+            </Card>
 
             {/* Pending Enrollments List */}
-            <div className="bg-white rounded-xl shadow-sm">
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900">
-                  Pending Enrollment Requests ({pendingEnrollments.length})
-                </h2>
-              </div>
-              <div className="p-6">
+            <Card>
+              <CardHeader>Pending Enrollment Requests ({pendingEnrollments.length})</CardHeader>
+              <div style={{ padding: '24px' }}>
                 {loading && pendingEnrollments.length === 0 ? (
-                  <p className="text-center text-gray-500 py-8">Loading...</p>
+                  <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                    <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 8px' }} />
+                    <p>Loading...</p>
+                  </div>
                 ) : pendingEnrollments.length === 0 ? (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500 text-lg">No pending enrollment requests</p>
-                    <p className="text-gray-400 text-sm mt-2">All enrollments have been processed</p>
+                  <div style={{ textAlign: 'center', padding: '48px' }}>
+                    <Check size={48} color="#10b981" style={{ margin: '0 auto 12px' }} />
+                    <p style={{ fontSize: '16px', color: '#6b7280', margin: 0 }}>No pending enrollment requests</p>
+                    <p style={{ fontSize: '13px', color: '#9ca3af', margin: '4px 0 0 0' }}>All enrollments have been processed</p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {pendingEnrollments.map((enrollment) => {
                       const student = getStudentById(enrollment.studentId);
                       const course = getCourseByCode(enrollment.courseCode);
@@ -708,49 +765,57 @@ export default function AdminPage() {
                       return (
                         <div
                           key={`${enrollment.studentId}-${enrollment.courseCode}`}
-                          className="p-6 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-200"
+                          style={itemCardStyle}
                         >
-                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="mb-3">
-                                <h3 className="text-lg font-bold text-gray-900">
-                                  {student?.name || enrollment.studentId}
-                                </h3>
-                                <p className="text-sm text-gray-600">
-                                  Student ID: {enrollment.studentId} • Semester: {student?.semester || "N/A"}
-                                </p>
-                              </div>
-                              <div className="mt-2">
-                                <p className="font-semibold text-gray-900">
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+                            <div style={{ flex: 1 }}>
+                              <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '600', color: '#111827' }}>
+                                {student?.name || enrollment.studentId}
+                              </h3>
+                              <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#6b7280' }}>
+                                Student ID: {enrollment.studentId} • Semester: {student?.semester || "N/A"}
+                              </p>
+                              <div style={{
+                                display: 'inline-block',
+                                padding: '6px 12px',
+                                background: '#f3f4f6',
+                                borderRadius: '8px',
+                              }}>
+                                <p style={{ margin: 0, fontSize: '14px', fontWeight: '500', color: '#111827' }}>
                                   {course?.title || enrollment.courseCode}
                                 </p>
-                                <p className="text-sm text-gray-600">
-                                  Code: {enrollment.courseCode} • Credits: {course?.creditHours || "N/A"} • Course Semester: {course?.semester || "N/A"}
+                                <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#6b7280' }}>
+                                  {enrollment.courseCode} • {course?.creditHours || "?"} Credits • Semester {course?.semester || "?"}
                                 </p>
                               </div>
                             </div>
 
-                            <div className="flex gap-4">
+                            <div style={{ display: 'flex', gap: '8px' }}>
                               <Button
                                 variant="primary"
+                                size="sm"
                                 onClick={() => handleApproveEnrollment(enrollment)}
                                 disabled={loading}
                               >
+                                <Check size={14} />
                                 Approve
                               </Button>
                               <Button
                                 variant="danger"
+                                size="sm"
                                 onClick={() => handleRejectEnrollment(enrollment)}
                                 disabled={loading}
                               >
+                                <X size={14} />
                                 Reject
                               </Button>
                               <Button
                                 variant="secondary"
+                                size="sm"
                                 onClick={() => handleDeleteEnrollment(enrollment)}
                                 disabled={loading}
                               >
-                                Delete
+                                <Trash2 size={14} />
                               </Button>
                             </div>
                           </div>
@@ -760,7 +825,7 @@ export default function AdminPage() {
                   </div>
                 )}
               </div>
-            </div>
+            </Card>
           </div>
         )}
       </div>

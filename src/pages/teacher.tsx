@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Card, CardHeader } from "../components/card";
 import { Button } from "../components/button";
-import { Badge } from "../components/badge";
 import { Dropdown } from "../components/dropdown";
 import { Input } from "../components/input";
+import { useAuth } from "../context/AuthContext";
 import {
-  getAllTeachers,
+  getTeacherById,
   getAllCourses,
   getAllStudents,
   getGradesByCourse,
@@ -21,15 +21,15 @@ import type { Student } from "../models/student";
 import type { Grade, GradeMarks } from "../models/grade";
 
 export default function TeacherPage() {
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  const { userData } = useAuth();
+  const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [students, setStudents] = useState<Student[]>([]);
   const [enrolledStudents, setEnrolledStudents] = useState<Student[]>([]);
   const [grades, setGrades] = useState<Grade[]>([]);
   const [enrollmentCounts, setEnrollmentCounts] = useState<{ [key: string]: number }>({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Grade entry form state
   const [gradeType, setGradeType] = useState<"assignment" | "quiz" | "mid" | "final">("assignment");
@@ -38,50 +38,44 @@ export default function TeacherPage() {
   const [bulkGrades, setBulkGrades] = useState<{ [studentId: string]: { obtained: number; max: number } }>({});
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (userData?.linkedId) {
+      loadData(userData.linkedId);
+    }
+  }, [userData]);
 
-  const loadData = async () => {
+  const loadData = async (teacherId: string) => {
     try {
-      const [teachersData, coursesData, studentsData] = await Promise.all([
-        getAllTeachers(),
+      setLoading(true);
+      const [teacherData, coursesData, studentsData] = await Promise.all([
+        getTeacherById(teacherId),
         getAllCourses(),
         getAllStudents(),
       ]);
-      setTeachers(teachersData);
+      setTeacher(teacherData);
       setCourses(coursesData);
       setStudents(studentsData);
 
-      if (teachersData.length > 0) {
-        setSelectedTeacher(teachersData[0]);
-        loadTeacherCourses(teachersData[0]);
+      if (teacherData) {
+        loadTeacherCourses(teacherData);
       }
     } catch (error) {
       console.error("Error loading data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const loadTeacherCourses = async (teacher: Teacher) => {
+  const loadTeacherCourses = async (teacherData: Teacher) => {
     try {
       // Load enrollment counts for assigned courses
       const counts: { [key: string]: number } = {};
-      for (const courseCode of teacher.assignedCourses || []) {
+      for (const courseCode of teacherData.assignedCourses || []) {
         const count = await countCourseEnrollments(courseCode);
         counts[courseCode] = count;
       }
       setEnrollmentCounts(counts);
     } catch (error) {
       console.error("Error loading teacher courses:", error);
-    }
-  };
-
-  const handleTeacherChange = (teacherId: string) => {
-    const teacher = teachers.find(t => t.id === teacherId);
-    if (teacher) {
-      setSelectedTeacher(teacher);
-      loadTeacherCourses(teacher);
-      setSelectedCourse("");
-      setGrades([]);
     }
   };
 
@@ -213,26 +207,15 @@ export default function TeacherPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-6 py-10">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2 tracking-tight">Teacher Dashboard</h1>
-            <p className="text-gray-600">Manage assigned courses and student grades</p>
-          </div>
-          <div className="w-80">
-            <Dropdown
-              options={teachers.map((teacher) => ({
-                value: teacher.id || "",
-                label: `${teacher.name} (${teacher.id})`,
-              }))}
-              value={selectedTeacher?.id || ""}
-              onChange={handleTeacherChange}
-              placeholder="Select teacher..."
-            />
-          </div>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2 tracking-tight">Teacher Dashboard</h1>
+          <p className="text-gray-600">Manage your assigned courses and student grades</p>
         </div>
 
-        {!selectedTeacher ? (
-          <p className="text-center text-gray-500 py-8">No teachers found</p>
+        {loading && !teacher ? (
+          <p className="text-center text-gray-500 py-8">Loading...</p>
+        ) : !teacher ? (
+          <p className="text-center text-gray-500 py-8">Teacher data not found. Please contact administrator.</p>
         ) : (
           <>
             {/* Teacher Info Card */}
@@ -241,16 +224,16 @@ export default function TeacherPage() {
                 <div className="p-6">
                   <div className="flex justify-between items-start">
                     <div className="space-y-2">
-                      <h2 className="text-3xl font-bold text-gray-900">{selectedTeacher.name}</h2>
+                      <h2 className="text-3xl font-bold text-gray-900">{teacher.name}</h2>
                       <div className="space-y-1">
                         <p className="text-gray-600">
-                          <span className="font-medium">Teacher ID:</span> {selectedTeacher.id}
+                          <span className="font-medium">Teacher ID:</span> {teacher.id}
                         </p>
                         <p className="text-gray-600">
-                          <span className="font-medium">Department:</span> {selectedTeacher.departmentCode}
+                          <span className="font-medium">Department:</span> {teacher.departmentCode}
                         </p>
                         <p className="text-gray-600">
-                          <span className="font-medium">Designation:</span> {selectedTeacher.designation}
+                          <span className="font-medium">Designation:</span> {teacher.designation}
                         </p>
                       </div>
                     </div>
@@ -258,7 +241,7 @@ export default function TeacherPage() {
                       <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
                         <p className="text-sm text-gray-600 mb-1">Assigned Courses</p>
                         <p className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                          {selectedTeacher.assignedCourses?.length || 0}
+                          {teacher.assignedCourses?.length || 0}
                         </p>
                       </div>
                     </div>
@@ -273,11 +256,11 @@ export default function TeacherPage() {
                 <Card>
                   <CardHeader className="p-4">Assigned Courses</CardHeader>
                   <div className="p-6" >
-                    {!selectedTeacher.assignedCourses || selectedTeacher.assignedCourses.length === 0 ? (
+                    {!teacher.assignedCourses || teacher.assignedCourses.length === 0 ? (
                       <p className="text-center text-gray-500 py-4">No courses assigned</p>
                     ) : (
                       <div className="gap-4  grid grid-cols-2">
-                        {selectedTeacher.assignedCourses.map((courseCode) => {
+                        {teacher.assignedCourses.map((courseCode) => {
                           const course = getCourseByCode(courseCode);
                           const enrolledCount = enrollmentCounts[courseCode] || 0;
                           return (

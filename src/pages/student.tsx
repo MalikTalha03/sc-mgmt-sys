@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Card, CardHeader } from "../components/card";
-import { Badge } from "../components/badge";
 import { Button } from "../components/button";
 import { Dropdown } from "../components/dropdown";
+import { useAuth } from "../context/AuthContext";
 import {
-  getAllStudents,
+  getStudentById,
   getAllCourses,
   getEnrollmentsByStudent,
   getGradesByStudent,
@@ -19,45 +19,34 @@ import type { Enrollment } from "../models/enrollment";
 import type { Grade } from "../models/grade";
 
 export default function StudentPage() {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const { userData } = useAuth();
+  const [student, setStudent] = useState<Student | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [grades, setGrades] = useState<Grade[]>([]);
   const [cgpa, setCgpa] = useState<number>(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [selectedCourseForEnrollment, setSelectedCourseForEnrollment] = useState<string>("");
   const [requestingEnrollment, setRequestingEnrollment] = useState(false);
 
   useEffect(() => {
-    loadStudents();
-  }, []);
-
-  const loadStudents = async () => {
-    try {
-      const [studentsData, coursesData] = await Promise.all([
-        getAllStudents(),
-        getAllCourses(),
-      ]);
-      setStudents(studentsData);
-      setCourses(coursesData);
-      if (studentsData.length > 0) {
-        loadStudentData(studentsData[0].studentId);
-        setSelectedStudent(studentsData[0]);
-      }
-    } catch (error) {
-      console.error("Error loading students:", error);
+    if (userData?.linkedId) {
+      loadStudentData(userData.linkedId);
     }
-  };
+  }, [userData]);
 
   const loadStudentData = async (studentId: string) => {
     try {
       setLoading(true);
-      const [enrollmentsData, gradesData, cgpaValue] = await Promise.all([
+      const [studentData, coursesData, enrollmentsData, gradesData, cgpaValue] = await Promise.all([
+        getStudentById(studentId),
+        getAllCourses(),
         getEnrollmentsByStudent(studentId),
         getGradesByStudent(studentId),
         calculateStudentCGPA(studentId),
       ]);
+      setStudent(studentData);
+      setCourses(coursesData);
       setEnrollments(enrollmentsData);
       setGrades(gradesData);
       setCgpa(cgpaValue);
@@ -68,20 +57,12 @@ export default function StudentPage() {
     }
   };
 
-  const handleStudentChange = (studentId: string) => {
-    const student = students.find(s => s.studentId === studentId);
-    if (student) {
-      setSelectedStudent(student);
-      loadStudentData(studentId);
-    }
-  };
-
   const getCourseByCode = (code: string) => {
     return courses.find(c => c.code === code);
   };
 
   const handleRequestEnrollment = async () => {
-    if (!selectedStudent || !selectedCourseForEnrollment) {
+    if (!student || !selectedCourseForEnrollment) {
       alert("Please select a course");
       return;
     }
@@ -89,14 +70,14 @@ export default function StudentPage() {
     try {
       setRequestingEnrollment(true);
       await createEnrollment({
-        studentId: selectedStudent.studentId,
+        studentId: student.studentId,
         courseCode: selectedCourseForEnrollment,
         status: "pending",
       });
       alert("Enrollment request submitted successfully! Waiting for admin approval.");
       
       // Reload student data
-      await loadStudentData(selectedStudent.studentId);
+      await loadStudentData(student.studentId);
       setSelectedCourseForEnrollment("");
     } catch (error: any) {
       console.error("Error requesting enrollment:", error);
@@ -114,28 +95,15 @@ export default function StudentPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-6 py-10">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2 tracking-tight">Student Dashboard</h1>
-            <p className="text-gray-600">View enrollments and academic records</p>
-          </div>
-          <div className="w-80">
-            <Dropdown
-              options={students.map((student) => ({
-                value: student.studentId,
-                label: `${student.name} (${student.studentId})`,
-              }))}
-              value={selectedStudent?.studentId || ""}
-              onChange={handleStudentChange}
-              placeholder="Select student..."
-            />
-          </div>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2 tracking-tight">Student Dashboard</h1>
+          <p className="text-gray-600">View your enrollments and academic records</p>
         </div>
 
         {loading ? (
           <p className="text-center text-gray-500 py-8">Loading...</p>
-        ) : !selectedStudent ? (
-          <p className="text-center text-gray-500 py-8">No students found</p>
+        ) : !student ? (
+          <p className="text-center text-gray-500 py-8">Student data not found. Please contact administrator.</p>
         ) : (
           <>
             {/* Student Info Card */}
@@ -144,19 +112,19 @@ export default function StudentPage() {
                 <div className="p-6">
                   <div className="flex justify-between items-start">
                     <div className="space-y-2">
-                      <h2 className="text-3xl font-bold text-gray-900">{selectedStudent.name}</h2>
+                      <h2 className="text-3xl font-bold text-gray-900">{student.name}</h2>
                       <div className="space-y-1">
                         <p className="text-gray-600">
-                          <span className="font-medium">Student ID:</span> {selectedStudent.studentId}
+                          <span className="font-medium">Student ID:</span> {student.studentId}
                         </p>
                         <p className="text-gray-600">
-                          <span className="font-medium">Department:</span> {selectedStudent.departmentCode}
+                          <span className="font-medium">Department:</span> {student.departmentCode}
                         </p>
                       </div>
                     </div>
                     <div className="text-right space-y-4">
                       <div>
-                        <p className="text-4xl text-gray-600 mb-1">Current Semester: {selectedStudent.semester}</p>
+                        <p className="text-4xl text-gray-600 mb-1">Current Semester: {student.semester}</p>
                       </div>
                       <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
                         <p className="text-sm text-gray-600 mb-1">CGPA</p>

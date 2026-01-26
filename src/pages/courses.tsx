@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardHeader } from "../components/card";
 import { Button } from "../components/button";
-import { Badge } from "../components/badge";
 import {
   getAllCourses,
   getAllTeachers,
@@ -102,7 +101,7 @@ export default function CoursesPage() {
             ) : courses.length === 0 ? (
               <p className="text-center text-gray-500 py-8">No courses found</p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 md:grid-cols-2 gap-4">
                 {courses.map((course) => {
                   const teacher = getTeacherForCourse(course.code);
                   return (
@@ -144,7 +143,7 @@ export default function CoursesPage() {
                           </div>
                         ) : (
                           <div className="space-y-3">
-                            <Badge variant="danger">No Instructor Assigned</Badge>
+                            <span >No Instructor Assigned</span>
                             {selectedCourse === course.code ? (
                               <div className="space-y-2">
                                 <select
@@ -202,8 +201,8 @@ export default function CoursesPage() {
       
 
             <Card>
-              <CardHeader>Available Faculty</CardHeader>
-              <div className="p-6 space-y-3">
+              <CardHeader className="p-4">Available Faculty</CardHeader>
+              <div className="p-6 grid grid-cols-3 md:grid-cols-2 gap-4">
                 {teachers.length === 0 ? (
                   <p className="text-center text-gray-500 py-4">No teachers found</p>
                 ) : (
@@ -211,7 +210,7 @@ export default function CoursesPage() {
                     <div key={teacher.id} className="p-4 bg-gradient-to-r from-gray-50 to-emerald-50 rounded-xl border border-gray-200 hover:border-emerald-300 transition-all">
                       <div className="flex items-center justify-between mb-3">
                         <p className="font-bold text-gray-900">{teacher.name}</p>
-                        <Badge variant="info">{teacher.departmentCode}</Badge>
+                        <span>{teacher.departmentCode}</span>
                       </div>
                       <div className="text-sm text-gray-600 mb-2">
                         <span className="font-semibold text-indigo-600">{teacher.assignedCourses.length}</span> / 3 Courses Assigned

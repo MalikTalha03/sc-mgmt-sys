@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardHeader } from "../components/card";
 import { Button } from "../components/button";
-import { Badge } from "../components/badge";
 import { Dropdown } from "../components/dropdown";
 import {
   getAllStudents,
@@ -223,14 +222,11 @@ export default function EnrollmentsPage() {
                             <p className="text-sm font-medium text-gray-900">{course?.title}</p>
                             <p className="text-xs text-gray-500">{enrollment.courseCode}</p>
                           </div>
-                          <Badge 
-                            variant={
-                              enrollment.status === "approved" ? "success" : 
-                              enrollment.status === "pending" ? "warning" : "danger"
-                            }
+                          <span 
+                            
                           >
                             {enrollment.status}
-                          </Badge>
+                          </span>
                         </div>
                       </div>
                     );

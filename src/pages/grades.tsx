@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardHeader } from "../components/card";
 import { Button } from "../components/button";
-import { Badge } from "../components/badge";
 import { Dropdown } from "../components/dropdown";
 import {
   getAllStudents,
@@ -232,9 +231,9 @@ export default function GradesPage() {
                               </h3>
                               <p className="text-sm text-gray-600">{grade.courseCode}</p>
                             </div>
-                            <Badge variant={gpa >= 3.0 ? "success" : gpa >= 2.0 ? "warning" : "danger"}>
+                            <span>
                               GPA: {gpa.toFixed(2)}
-                            </Badge>
+                            </span>
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div className="p-3 bg-white rounded-lg">

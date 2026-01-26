@@ -5,7 +5,6 @@ import { TeacherForm } from "../components/teacherform";
 import { DepartmentForm } from "../components/departmentForm";
 import { Card, CardHeader } from "../components/card";
 import { Button } from "../components/button";
-import { Badge } from "../components/badge";
 import { Dropdown } from "../components/dropdown";
 import {
   getAllStudents,
@@ -460,7 +459,7 @@ export default function AdminPage() {
             </div>
             <div className="lg:col-span-2">
               <Card>
-                <CardHeader>All Courses</CardHeader>
+                <CardHeader className="p-4">All Courses</CardHeader>
                 <div className="p-6 space-y-4">
                   {loading ? (
                     <p className="text-center text-gray-500 py-8">Loading...</p>
@@ -496,8 +495,8 @@ export default function AdminPage() {
             </div>
             <div className="lg:col-span-2">
               <Card>
-                <CardHeader>All Departments</CardHeader>
-                <div className="p-6 space-y-4">
+                <CardHeader className="p-4">All Departments</CardHeader>
+                <div className="p-6 grid grid-cols-3 gap-4">
                   {loading ? (
                     <p className="text-center text-gray-500 py-8">Loading...</p>
                   ) : departments.length === 0 ? (
@@ -510,9 +509,9 @@ export default function AdminPage() {
                             <h3 className="text-xl font-bold text-gray-900">{dept.name}</h3>
                             <p className="text-sm text-gray-600">Code: {dept.code}</p>
                           </div>
-                          <Badge variant={dept.isActive ? "success" : "danger"}>
+                          <span>
                             {dept.isActive ? "Active" : "Inactive"}
-                          </Badge>
+                          </span>
                         </div>
                         <div className="flex gap-3">
                           <Button variant="secondary" size="sm" onClick={() => toggleDepartmentStatus(dept.code).then(loadData)}>
@@ -639,7 +638,7 @@ export default function AdminPage() {
                                   {student?.name || enrollment.studentId}
                                 </h3>
                                 <p className="text-sm text-gray-600">
-                                  Student ID: {enrollment.studentId}
+                                  Student ID: {enrollment.studentId} • Semester: {student?.semester || "N/A"}
                                 </p>
                               </div>
                               <div className="mt-2">
@@ -647,7 +646,7 @@ export default function AdminPage() {
                                   {course?.title || enrollment.courseCode}
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                  Code: {enrollment.courseCode} • Credits: {course?.creditHours || "N/A"}
+                                  Code: {enrollment.courseCode} • Credits: {course?.creditHours || "N/A"} • Course Semester: {course?.semester || "N/A"}
                                 </p>
                               </div>
                             </div>

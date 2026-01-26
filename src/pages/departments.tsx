@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { DepartmentForm } from "../components/departmentForm";
 import { Card, CardHeader } from "../components/card";
 import { Button } from "../components/button";
-import { Badge } from "../components/badge";
 import {
   getAllDepartments,
   createDepartment,
@@ -22,8 +21,14 @@ export default function DepartmentsPage() {
 
   useEffect(() => {
     loadDepartments();
-    loadStats();
   }, []);
+
+  // Load stats whenever departments change
+  useEffect(() => {
+    if (departments.length > 0) {
+      loadStats();
+    }
+  }, [departments]);
 
   const loadDepartments = async () => {
     try {
@@ -128,9 +133,9 @@ export default function DepartmentsPage() {
                           <h3 className="text-xl font-bold text-gray-900">{dept.name}</h3>
                           <p className="text-sm text-gray-600">Code: {dept.code}</p>
                         </div>
-                        <Badge variant={dept.isActive ? "success" : "danger"}>
+                        <span>
                           {dept.isActive ? "Active" : "Inactive"}
-                        </Badge>
+                        </span>
                       </div>
                       <div className="grid grid-cols-3 gap-4 mb-4">
                         <div className="text-center p-3 bg-white rounded-lg">

@@ -1,6 +1,16 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { 
+  Home, 
+  BookOpen, 
+  Building2, 
+  GraduationCap, 
+  UserCircle,
+  LogOut,
+  ChevronLeft,
+  ChevronRight
+} from "lucide-react";
 
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
@@ -9,11 +19,11 @@ export function Sidebar() {
   const { userData, logout } = useAuth();
 
   const allMenuItems = [
-    { path: "/admin", label: "Admin", icon: "🏠", roles: ["admin"] },
-    { path: "/courses", label: "Courses", icon: "📚", roles: ["admin"] },
-    { path: "/departments", label: "Departments", icon: "🏢", roles: ["admin"] },
-    { path: "/student", label: "Student", icon: "👨‍🎓", roles: ["student"] },
-    { path: "/teacher", label: "Teacher", icon: "👨‍🏫", roles: ["teacher"] },
+    { path: "/admin", label: "Dashboard", icon: Home, roles: ["admin"] },
+    { path: "/courses", label: "Courses", icon: BookOpen, roles: ["admin"] },
+    { path: "/departments", label: "Departments", icon: Building2, roles: ["admin"] },
+    { path: "/student", label: "My Portal", icon: GraduationCap, roles: ["student"] },
+    { path: "/teacher", label: "My Portal", icon: UserCircle, roles: ["teacher"] },
   ];
 
   // Filter menu items based on user role
@@ -34,66 +44,174 @@ export function Sidebar() {
 
   return (
     <div
-      className={`fixed left-0 top-0 h-screen bg-gradient-to-b from-indigo-600 to-indigo-800 text-white shadow-xl transition-all duration-300 z-50 flex flex-col ${
-        isOpen ? "w-64" : "w-20"
-      }`}
+      style={{
+        position: 'fixed',
+        left: 0,
+        top: 0,
+        height: '100vh',
+        width: isOpen ? '260px' : '72px',
+        background: 'white',
+        borderRight: '1px solid #e5e7eb',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'width 0.3s ease',
+        zIndex: 50
+      }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-indigo-500">
-        <h1 className={`font-bold text-xl text-white ${!isOpen && "hidden"}`}>
-          🎓 School
-        </h1>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '20px 16px',
+        borderBottom: '1px solid #e5e7eb'
+      }}>
+        {isOpen && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '36px',
+              height: '36px',
+              background: '#4f46e5',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <GraduationCap size={20} color="white" />
+            </div>
+            <span style={{ fontWeight: '700', fontSize: '18px', color: '#1f2937' }}>
+              School SMS
+            </span>
+          </div>
+        )}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 hover:bg-indigo-500 rounded-lg transition text-white"
+          style={{
+            width: '32px',
+            height: '32px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#f3f4f6',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            color: '#6b7280'
+          }}
         >
-          {isOpen ? "◀" : "▶"}
+          {isOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
         </button>
       </div>
 
       {/* User Info */}
-      {userData && (
-        <div className={`p-4 border-b border-indigo-500 ${!isOpen && "hidden"}`}>
-          <p className="text-sm text-indigo-200">Logged in as</p>
-          <p className="font-semibold truncate">{userData.email}</p>
-          <span className="inline-block mt-1 px-2 py-0.5 bg-indigo-500 rounded text-xs uppercase">
+      {userData && isOpen && (
+        <div style={{
+          padding: '16px',
+          borderBottom: '1px solid #e5e7eb'
+        }}>
+          <p style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '4px' }}>
+            Logged in as
+          </p>
+          <p style={{ 
+            fontWeight: '600', 
+            color: '#1f2937',
+            fontSize: '14px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}>
+            {userData.email}
+          </p>
+          <span style={{
+            display: 'inline-block',
+            marginTop: '8px',
+            padding: '4px 10px',
+            background: '#eef2ff',
+            color: '#4f46e5',
+            borderRadius: '6px',
+            fontSize: '11px',
+            fontWeight: '600',
+            textTransform: 'uppercase'
+          }}>
             {userData.role}
           </span>
         </div>
       )}
 
       {/* Menu Items */}
-      <nav className="mt-4 flex-1">
-        {menuItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`flex items-center gap-4 px-4 py-3 mx-2 rounded-lg transition-all duration-200 ${
-              isActive(item.path)
-                ? "bg-white text-indigo-600 shadow-lg"
-                : "text-indigo-100 hover:bg-indigo-500 hover:text-white"
-            }`}
-          >
-            <span className="text-xl">{item.icon}</span>
-            <span className={`font-semibold whitespace-nowrap ${!isOpen && "hidden"}`}>
-              {item.label}
-            </span>
-          </Link>
-        ))}
+      <nav style={{ flex: 1, padding: '16px 12px' }}>
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          const active = isActive(item.path);
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px 14px',
+                marginBottom: '4px',
+                borderRadius: '10px',
+                textDecoration: 'none',
+                background: active ? '#4f46e5' : 'transparent',
+                color: active ? 'white' : '#4b5563',
+                fontWeight: active ? '600' : '500',
+                fontSize: '14px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                if (!active) {
+                  e.currentTarget.style.background = '#f3f4f6';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!active) {
+                  e.currentTarget.style.background = 'transparent';
+                }
+              }}
+            >
+              <Icon size={20} />
+              {isOpen && <span>{item.label}</span>}
+            </Link>
+          );
+        })}
       </nav>
 
       {/* Logout Button */}
-      <div className="p-4 border-t border-indigo-500">
+      <div style={{
+        padding: '16px 12px',
+        borderTop: '1px solid #e5e7eb'
+      }}>
         <button
           onClick={handleLogout}
-          className={`flex items-center gap-4 w-full px-4 py-3 rounded-lg text-indigo-100 hover:bg-red-500 hover:text-white transition-all duration-200 ${
-            !isOpen && "justify-center"
-          }`}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            width: '100%',
+            padding: '12px 14px',
+            background: 'transparent',
+            border: 'none',
+            borderRadius: '10px',
+            cursor: 'pointer',
+            color: '#6b7280',
+            fontWeight: '500',
+            fontSize: '14px',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#fef2f2';
+            e.currentTarget.style.color = '#dc2626';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = '#6b7280';
+          }}
         >
-          <span className="text-xl">🚪</span>
-          <span className={`font-semibold whitespace-nowrap ${!isOpen && "hidden"}`}>
-            Logout
-          </span>
+          <LogOut size={20} />
+          {isOpen && <span>Logout</span>}
         </button>
       </div>
     </div>

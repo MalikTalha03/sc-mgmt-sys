@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../firebase/authService";
+import { loginUser, registerUser } from "../firebase/authService";
 import { 
   GraduationCap, 
   Mail, 
@@ -8,9 +8,7 @@ import {
   LogIn, 
   AlertCircle,
   Loader2,
-  BookOpen,
-  Users,
-  Award
+  UserPlus
 } from "lucide-react";
 
 export default function LoginPage() {
@@ -18,11 +16,35 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
+
+  const handleCreateAdmin = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      setSuccess("");
+      await registerUser("admin@school.com", "admin123", "admin", "");
+      setSuccess("Admin created! Email: admin@school.com, Password: admin123");
+      setEmail("admin@school.com");
+      setPassword("admin123");
+    } catch (err: any) {
+      if (err.code === "auth/email-already-in-use") {
+        setSuccess("Admin already exists! Email: admin@school.com, Password: admin123");
+        setEmail("admin@school.com");
+        setPassword("admin123");
+      } else {
+        setError(err.message || "Failed to create admin");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     
     if (!email || !password) {
       setError("Please enter email and password");
@@ -56,133 +78,267 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-indigo-900 via-purple-900 to-indigo-800 flex items-center justify-center p-4">
-      {/* Background decorations */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full opacity-20 blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-500 rounded-full opacity-20 blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500 rounded-full opacity-10 blur-3xl"></div>
-      </div>
-
-      <div className="relative max-w-md w-full">
-        {/* Glass Card */}
-        <div className="backdrop-blur-xl bg-white/10 rounded-3xl shadow-2xl p-8 border border-white/20">
-          {/* Logo/Header */}
-          <div className="text-center mb-8">
-            {/* Animated Logo */}
-            <div className="relative inline-block mb-6">
-              <div className="w-20 h-20 bg-linear-to-br from-indigo-400 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30 transform hover:scale-105 transition-transform duration-300">
-                <GraduationCap className="w-10 h-10 text-white" />
-              </div>
-              {/* Floating icons */}
-              <div className="absolute -top-2 -right-2 w-8 h-8 bg-linear-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center shadow-lg animate-bounce">
-                <Award className="w-4 h-4 text-white" />
-              </div>
-            </div>
-            
-            <h1 className="text-3xl font-bold text-white mb-2">
-              School Management
-            </h1>
-            <p className="text-indigo-200 text-sm">
-              Your gateway to academic excellence
-            </p>
+    <div style={{ 
+      minHeight: '100vh', 
+      background: '#f3f4f6',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px'
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '420px',
+        background: 'white',
+        borderRadius: '24px',
+        padding: '40px',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)'
+      }}>
+        {/* Logo */}
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{
+            width: '80px',
+            height: '80px',
+            background: '#4f46e5',
+            borderRadius: '20px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '20px'
+          }}>
+            <GraduationCap size={40} color="white" />
           </div>
-
-          {/* Feature Pills */}
-          <div className="flex justify-center gap-3 mb-8">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 rounded-full text-xs text-indigo-200">
-              <BookOpen className="w-3 h-3" />
-              <span>Courses</span>
-            </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 rounded-full text-xs text-indigo-200">
-              <Users className="w-3 h-3" />
-              <span>Students</span>
-            </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 rounded-full text-xs text-indigo-200">
-              <Award className="w-3 h-3" />
-              <span>Grades</span>
-            </div>
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-500/20 backdrop-blur border border-red-500/30 rounded-xl flex items-center gap-3 text-red-200">
-              <AlertCircle className="w-5 h-5 shrink-0" />
-              <span className="text-sm">{error}</span>
-            </div>
-          )}
-
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-indigo-200 ml-1">
-                Email Address
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Mail className="w-5 h-5 text-indigo-300" />
-                </div>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-indigo-300/60 focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-200 backdrop-blur"
-                  placeholder="you@example.com"
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-indigo-200 ml-1">
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="w-5 h-5 text-indigo-300" />
-                </div>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-indigo-300/60 focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-200 backdrop-blur"
-                  placeholder="••••••••"
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3.5 bg-linear-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-semibold rounded-xl shadow-lg shadow-purple-500/30 flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Signing in...</span>
-                </>
-              ) : (
-                <>
-                  <LogIn className="w-5 h-5" />
-                  <span>Sign In</span>
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-white/10">
-            <p className="text-center text-indigo-300/70 text-sm">
-              Need access? Contact your administrator
-            </p>
-          </div>
+          <h1 style={{ 
+            fontSize: '28px', 
+            fontWeight: '700', 
+            color: '#1a1a2e',
+            margin: '0 0 8px 0'
+          }}>
+            Welcome Back
+          </h1>
+          <p style={{ 
+            color: '#6b7280', 
+            fontSize: '15px',
+            margin: 0
+          }}>
+            Sign in to School Management System
+          </p>
         </div>
 
-        {/* Bottom branding */}
-        <p className="text-center text-indigo-300/50 text-xs mt-6">
-          © 2024 School Management System. All rights reserved.
-        </p>
+        {/* Error Message */}
+        {error && (
+          <div style={{
+            background: '#fef2f2',
+            border: '1px solid #fecaca',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px'
+          }}>
+            <AlertCircle size={18} color="#dc2626" />
+            <span style={{ color: '#dc2626', fontSize: '14px' }}>{error}</span>
+          </div>
+        )}
+
+        {/* Success Message */}
+        {success && (
+          <div style={{
+            background: '#f0fdf4',
+            border: '1px solid #bbf7d0',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px'
+          }}>
+            <UserPlus size={18} color="#16a34a" />
+            <span style={{ color: '#16a34a', fontSize: '14px' }}>{success}</span>
+          </div>
+        )}
+
+        {/* Form */}
+        <form onSubmit={handleSubmit}>
+          {/* Email Field */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#374151',
+              marginBottom: '8px'
+            }}>
+              Email Address
+            </label>
+            <div style={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              <Mail 
+                size={20} 
+                color="#9ca3af" 
+                style={{ 
+                  position: 'absolute', 
+                  left: '16px',
+                  pointerEvents: 'none'
+                }} 
+              />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                disabled={loading}
+                style={{
+                  width: '100%',
+                  padding: '14px 16px 14px 48px',
+                  fontSize: '15px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '12px',
+                  background: '#f9fafb',
+                  color: '#1f2937',
+                  transition: 'all 0.2s'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#667eea';
+                  e.target.style.background = 'white';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#e5e7eb';
+                  e.target.style.background = '#f9fafb';
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Password Field */}
+          <div style={{ marginBottom: '28px' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#374151',
+              marginBottom: '8px'
+            }}>
+              Password
+            </label>
+            <div style={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              <Lock 
+                size={20} 
+                color="#9ca3af" 
+                style={{ 
+                  position: 'absolute', 
+                  left: '16px',
+                  pointerEvents: 'none'
+                }} 
+              />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                disabled={loading}
+                style={{
+                  width: '100%',
+                  padding: '14px 16px 14px 48px',
+                  fontSize: '15px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '12px',
+                  background: '#f9fafb',
+                  color: '#1f2937',
+                  transition: 'all 0.2s'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#667eea';
+                  e.target.style.background = 'white';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#e5e7eb';
+                  e.target.style.background = '#f9fafb';
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '14px',
+              background: loading ? '#9ca3af' : '#4f46e5',
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: '600',
+              border: 'none',
+              borderRadius: '12px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'all 0.2s'
+            }}
+          >
+            {loading ? (
+              <>
+                <Loader2 size={20} className="animate-spin" />
+                <span>Signing in...</span>
+              </>
+            ) : (
+              <>
+                <LogIn size={20} />
+                <span>Sign In</span>
+              </>
+            )}
+          </button>
+        </form>
+
+        {/* Footer */}
+        <div style={{
+          marginTop: '32px',
+          paddingTop: '24px',
+          borderTop: '1px solid #e5e7eb',
+          textAlign: 'center'
+        }}>
+          <p style={{ 
+            color: '#9ca3af', 
+            fontSize: '14px',
+            margin: '0 0 16px 0'
+          }}>
+            Need access? Contact your administrator
+          </p>
+          <button
+            type="button"
+            onClick={handleCreateAdmin}
+            disabled={loading}
+            style={{
+              padding: '10px 20px',
+              background: '#f3f4f6',
+              color: '#374151',
+              fontSize: '14px',
+              fontWeight: '500',
+              border: '1px solid #e5e7eb',
+              borderRadius: '8px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s'
+            }}
+          >
+            <UserPlus size={16} />
+            Create Demo Admin
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,8 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, CardHeader } from "../components/card";
 import { Button } from "../components/button";
-import { Dropdown } from "../components/dropdown";
-import { Input } from "../components/input";
 import { useAuth } from "../context/AuthContext";
 import {
   getTeacherById,
@@ -19,6 +16,18 @@ import type { Teacher } from "../models/teacher";
 import type { Course } from "../models/course";
 import type { Student } from "../models/student";
 import type { Grade, GradeMarks } from "../models/grade";
+import {
+  Users,
+  BookOpen,
+  Award,
+  Loader2,
+  AlertCircle,
+  Save,
+  ChevronDown,
+  GraduationCap,
+  Building2,
+  ClipboardList
+} from "lucide-react";
 
 export default function TeacherPage() {
   const { userData } = useAuth();
@@ -31,9 +40,8 @@ export default function TeacherPage() {
   const [enrollmentCounts, setEnrollmentCounts] = useState<{ [key: string]: number }>({});
   const [loading, setLoading] = useState(true);
 
-  // Grade entry form state
   const [gradeType, setGradeType] = useState<"assignment" | "quiz" | "mid" | "final">("assignment");
-  const [gradeNumber, setGradeNumber] = useState<number>(1); // For assignment/quiz number (1-4)
+  const [gradeNumber, setGradeNumber] = useState<number>(1);
   const [globalMaxMarks, setGlobalMaxMarks] = useState<number>(100);
   const [bulkGrades, setBulkGrades] = useState<{ [studentId: string]: { obtained: number; max: number } }>({});
 
@@ -67,7 +75,6 @@ export default function TeacherPage() {
 
   const loadTeacherCourses = async (teacherData: Teacher) => {
     try {
-      // Load enrollment counts for assigned courses
       const counts: { [key: string]: number } = {};
       for (const courseCode of teacherData.assignedCourses || []) {
         const count = await countCourseEnrollments(courseCode);
@@ -93,9 +100,9 @@ export default function TeacherPage() {
 
   const handleCourseSelect = async (courseCode: string) => {
     setSelectedCourse(courseCode);
+    setBulkGrades({});
     if (courseCode) {
       loadCourseGrades(courseCode);
-      // Load enrolled students for this course
       try {
         const enrollments = await getEnrollmentsByCourse(courseCode);
         const enrolledStudentIds = enrollments
@@ -126,11 +133,9 @@ export default function TeacherPage() {
     }
 
     try {
-      // Get existing grade for the student
       const existingGrades = grades.filter(g => g.studentId === studentId);
       const existingGrade = existingGrades[0];
 
-      // Build updated marks object
       const updatedMarks: GradeMarks = existingGrade ? { ...existingGrade.marks } : {
         assignments: [],
         quizzes: [],
@@ -142,7 +147,6 @@ export default function TeacherPage() {
         maxFinal: 100,
       };
 
-      // Update the specific grade type
       if (gradeType === "assignment") {
         updatedMarks.assignments[gradeNumber - 1] = gradeData.obtained;
         updatedMarks.maxAssignments[gradeNumber - 1] = gradeData.max;
@@ -165,7 +169,6 @@ export default function TeacherPage() {
 
       alert("Grade saved successfully!");
       loadCourseGrades(selectedCourse);
-      // Clear this student's grade from bulk
       setBulkGrades(prev => {
         const newGrades = { ...prev };
         delete newGrades[studentId];
@@ -204,316 +207,456 @@ export default function TeacherPage() {
     return courses.find(c => c.code === code);
   };
 
+  const containerStyle: React.CSSProperties = {
+    minHeight: '100vh',
+    background: '#f3f4f6',
+  };
+
+  const contentStyle: React.CSSProperties = {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: '32px 24px',
+  };
+
+  const statCardStyle: React.CSSProperties = {
+    background: 'white',
+    borderRadius: '12px',
+    padding: '20px',
+    border: '1px solid #e5e7eb',
+  };
+
+  const sectionStyle: React.CSSProperties = {
+    background: 'white',
+    borderRadius: '12px',
+    border: '1px solid #e5e7eb',
+    overflow: 'hidden',
+  };
+
+  const sectionHeaderStyle: React.CSSProperties = {
+    padding: '16px 20px',
+    borderBottom: '1px solid #e5e7eb',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  };
+
+  const tableStyle: React.CSSProperties = {
+    width: '100%',
+    borderCollapse: 'collapse',
+  };
+
+  const thStyle: React.CSSProperties = {
+    padding: '12px 16px',
+    textAlign: 'left',
+    fontSize: '12px',
+    fontWeight: '600',
+    color: '#6b7280',
+    textTransform: 'uppercase',
+    background: '#f9fafb',
+    borderBottom: '1px solid #e5e7eb',
+  };
+
+  const tdStyle: React.CSSProperties = {
+    padding: '14px 16px',
+    fontSize: '14px',
+    color: '#374151',
+    borderBottom: '1px solid #e5e7eb',
+  };
+
+  const selectStyle: React.CSSProperties = {
+    padding: '8px 12px',
+    border: '1px solid #d1d5db',
+    borderRadius: '8px',
+    fontSize: '14px',
+    background: 'white',
+    cursor: 'pointer',
+  };
+
+  const inputStyle: React.CSSProperties = {
+    padding: '8px 12px',
+    border: '1px solid #d1d5db',
+    borderRadius: '8px',
+    fontSize: '14px',
+    width: '80px',
+    textAlign: 'center',
+  };
+
+  if (loading && !teacher) {
+    return (
+      <div style={containerStyle}>
+        <div style={{ ...contentStyle, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+          <div style={{ textAlign: 'center', color: '#6b7280' }}>
+            <Loader2 size={40} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
+            <p style={{ margin: 0 }}>Loading your dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!teacher) {
+    return (
+      <div style={containerStyle}>
+        <div style={{ ...contentStyle, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+          <div style={{ textAlign: 'center', color: '#6b7280' }}>
+            <AlertCircle size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
+            <p style={{ margin: 0 }}>Teacher data not found. Please contact administrator.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const totalStudents = Object.values(enrollmentCounts).reduce((a, b) => a + b, 0);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2 tracking-tight">Teacher Dashboard</h1>
-          <p className="text-gray-600">Manage your assigned courses and student grades</p>
+    <div style={containerStyle}>
+      <div style={contentStyle}>
+        {/* Header */}
+        <div style={{ marginBottom: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <h1 style={{ fontSize: '26px', fontWeight: '700', color: '#111827', margin: '0 0 4px 0' }}>
+                Welcome, {teacher.name}
+              </h1>
+              <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
+                {teacher.designation} • {teacher.departmentCode}
+              </p>
+            </div>
+            <div style={{
+              padding: '16px 24px',
+              background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+              borderRadius: '12px',
+              color: 'white',
+              textAlign: 'center',
+            }}>
+              <p style={{ margin: 0, fontSize: '12px', opacity: 0.9 }}>Assigned Courses</p>
+              <p style={{ margin: '4px 0 0', fontSize: '28px', fontWeight: '700' }}>{teacher.assignedCourses?.length || 0}</p>
+            </div>
+          </div>
         </div>
 
-        {loading && !teacher ? (
-          <p className="text-center text-gray-500 py-8">Loading...</p>
-        ) : !teacher ? (
-          <p className="text-center text-gray-500 py-8">Teacher data not found. Please contact administrator.</p>
-        ) : (
+        {/* Stats Row */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '32px' }}>
+          <div style={statCardStyle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ padding: '10px', background: '#eef2ff', borderRadius: '10px' }}>
+                <BookOpen size={20} color="#4f46e5" />
+              </div>
+              <div>
+                <p style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#111827' }}>{teacher.assignedCourses?.length || 0}</p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>My Courses</p>
+              </div>
+            </div>
+          </div>
+          <div style={statCardStyle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ padding: '10px', background: '#ecfdf5', borderRadius: '10px' }}>
+                <GraduationCap size={20} color="#059669" />
+              </div>
+              <div>
+                <p style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#111827' }}>{totalStudents}</p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>Total Students</p>
+              </div>
+            </div>
+          </div>
+          <div style={statCardStyle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ padding: '10px', background: '#f3e8ff', borderRadius: '10px' }}>
+                <Building2 size={20} color="#7c3aed" />
+              </div>
+              <div>
+                <p style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#111827' }}>{teacher.departmentCode}</p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>Department</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* My Courses */}
+        <div style={{ ...sectionStyle, marginBottom: '24px' }}>
+          <div style={sectionHeaderStyle}>
+            <BookOpen size={18} color="#4f46e5" />
+            <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#111827' }}>My Courses</h2>
+          </div>
+          {!teacher.assignedCourses || teacher.assignedCourses.length === 0 ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
+              <BookOpen size={32} style={{ margin: '0 auto 8px', opacity: 0.5 }} />
+              <p style={{ margin: 0 }}>No courses assigned yet</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', padding: '20px' }}>
+              {teacher.assignedCourses.map((courseCode) => {
+                const course = getCourseByCode(courseCode);
+                const enrolledCount = enrollmentCounts[courseCode] || 0;
+                const isSelected = selectedCourse === courseCode;
+                return (
+                  <div
+                    key={courseCode}
+                    onClick={() => handleCourseSelect(courseCode)}
+                    style={{
+                      padding: '16px',
+                      borderRadius: '10px',
+                      border: isSelected ? '2px solid #4f46e5' : '1px solid #e5e7eb',
+                      background: isSelected ? '#eef2ff' : '#f9fafb',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <h3 style={{ margin: '0 0 4px 0', fontSize: '15px', fontWeight: '600', color: '#111827' }}>
+                      {course?.title || courseCode}
+                    </h3>
+                    <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#6b7280' }}>{courseCode}</p>
+                    <div style={{ display: 'flex', gap: '16px' }}>
+                      <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                        <strong style={{ color: '#4f46e5' }}>{course?.creditHours || 3}</strong> Credits
+                      </span>
+                      <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                        <strong style={{ color: '#059669' }}>{enrolledCount}</strong> Students
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Grade Entry Section */}
+        {selectedCourse && (
           <>
-            {/* Teacher Info Card */}
-            <div className="mb-8">
-              <Card>
-                <div className="p-6">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2">
-                      <h2 className="text-3xl font-bold text-gray-900">{teacher.name}</h2>
-                      <div className="space-y-1">
-                        <p className="text-gray-600">
-                          <span className="font-medium">Teacher ID:</span> {teacher.id}
-                        </p>
-                        <p className="text-gray-600">
-                          <span className="font-medium">Department:</span> {teacher.departmentCode}
-                        </p>
-                        <p className="text-gray-600">
-                          <span className="font-medium">Designation:</span> {teacher.designation}
-                        </p>
-                      </div>
+            <div style={{ ...sectionStyle, marginBottom: '24px' }}>
+              <div style={sectionHeaderStyle}>
+                <ClipboardList size={18} color="#4f46e5" />
+                <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#111827' }}>
+                  Enter Grades - {getCourseByCode(selectedCourse)?.title}
+                </h2>
+              </div>
+              <div style={{ padding: '20px' }}>
+                {/* Grade Type Selection */}
+                <div style={{ display: 'flex', gap: '16px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '500', color: '#374151' }}>
+                      Grade Type
+                    </label>
+                    <select
+                      value={gradeType}
+                      onChange={(e) => setGradeType(e.target.value as any)}
+                      style={selectStyle}
+                    >
+                      <option value="assignment">Assignment</option>
+                      <option value="quiz">Quiz</option>
+                      <option value="mid">Mid Term</option>
+                      <option value="final">Final</option>
+                    </select>
+                  </div>
+
+                  {(gradeType === "assignment" || gradeType === "quiz") && (
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '500', color: '#374151' }}>
+                        Number
+                      </label>
+                      <select
+                        value={gradeNumber}
+                        onChange={(e) => setGradeNumber(parseInt(e.target.value))}
+                        style={selectStyle}
+                      >
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                      </select>
                     </div>
-                    <div className="text-right">
-                      <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
-                        <p className="text-sm text-gray-600 mb-1">Assigned Courses</p>
-                        <p className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                          {teacher.assignedCourses?.length || 0}
-                        </p>
-                      </div>
-                    </div>
+                  )}
+
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '500', color: '#374151' }}>
+                      Max Marks
+                    </label>
+                    <input
+                      type="number"
+                      value={globalMaxMarks}
+                      onChange={(e) => setGlobalMaxMarks(parseFloat(e.target.value) || 100)}
+                      style={inputStyle}
+                    />
                   </div>
                 </div>
-              </Card>
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Assigned Courses */}
-              <div className="lg:col-span-2">
-                <Card>
-                  <CardHeader className="p-4">Assigned Courses</CardHeader>
-                  <div className="p-6" >
-                    {!teacher.assignedCourses || teacher.assignedCourses.length === 0 ? (
-                      <p className="text-center text-gray-500 py-4">No courses assigned</p>
-                    ) : (
-                      <div className="gap-4  grid grid-cols-2">
-                        {teacher.assignedCourses.map((courseCode) => {
-                          const course = getCourseByCode(courseCode);
-                          const enrolledCount = enrollmentCounts[courseCode] || 0;
-                          return (
-                            <div
-                              key={courseCode}
-                              className="p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-200"
-                            >
-                              <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                  <h3 className="font-bold text-gray-900">
-                                    {course?.title || courseCode}
-                                  </h3>
-                                  <p className="text-sm text-gray-600">{courseCode}</p>
-                                  <div className="flex gap-3 mt-2">
-                                    <span className="text-sm text-gray-600">{course?.creditHours || 3} Credits</span>
-                                    <span className="text-sm text-gray-600">{enrolledCount} Enrolled</span>
-                                  </div>
-                                </div>
-                                <Button
-                                  variant="primary"
-                                  size="sm"
-                                  className="border-2"
-                                  onClick={() => handleCourseSelect(courseCode)}
-                                >
-                                  {selectedCourse === courseCode ? "Selected" : "View Grades"}
-                                </Button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                {/* Student Grades Table */}
+                {enrolledStudents.length === 0 ? (
+                  <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280', background: '#f9fafb', borderRadius: '8px' }}>
+                    <Users size={32} style={{ margin: '0 auto 8px', opacity: 0.5 }} />
+                    <p style={{ margin: 0 }}>No students enrolled in this course</p>
                   </div>
-                </Card>
-              </div>
-
-              {/* Grade Entry & Display */}
-              <div className="space-y-6">
-                {selectedCourse && (
+                ) : (
                   <>
-                    <Card>
-                      <CardHeader className="p-4">Enter Grade</CardHeader>
-                      <div className="p-6 space-y-4">
-                        <div className="grid grid-cols-3 gap-4">
-                          <Dropdown
-                            label="Grade Type"
-                            className="w-4/12"
-                            options={[
-                              { value: "assignment", label: "Assignment" },
-                              { value: "quiz", label: "Quiz" },
-                              { value: "mid", label: "Mid Term" },
-                              { value: "final", label: "Final" },
-                            ]}
-                            value={gradeType}
-                            onChange={(value) => setGradeType(value as "assignment" | "quiz" | "mid" | "final")}
-                            placeholder="Select grade type..."
-                          />
+                    <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden' }}>
+                      <table style={tableStyle}>
+                        <thead>
+                          <tr>
+                            <th style={thStyle}>Student</th>
+                            <th style={{ ...thStyle, textAlign: 'center' }}>Current Value</th>
+                            <th style={{ ...thStyle, textAlign: 'center' }}>Marks Obtained</th>
+                            <th style={{ ...thStyle, textAlign: 'center' }}>Max Marks</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {enrolledStudents.map((student) => {
+                            const existingGrade = grades.find(g => g.studentId === student.studentId);
+                            let currentValue = 0;
 
-                          {/* Number Selection for Assignment/Quiz */}
-                          {(gradeType === "assignment" || gradeType === "quiz") && (
-                            <Dropdown
-                              label={`${gradeType === "assignment" ? "Assignment" : "Quiz"} Number`}
-                              className="w-4/12"
-                              options={[
-                                { value: "1", label: "1" },
-                                { value: "2", label: "2" },
-                                { value: "3", label: "3" },
-                                { value: "4", label: "4" },
-                              ]}
-                              value={gradeNumber.toString()}
-                              onChange={(value) => setGradeNumber(parseInt(value))}
-                              placeholder="Select number..."
-                            />
-                          )}
+                            if (existingGrade) {
+                              if (gradeType === "assignment") {
+                                currentValue = existingGrade.marks.assignments[gradeNumber - 1] || 0;
+                              } else if (gradeType === "quiz") {
+                                currentValue = existingGrade.marks.quizzes[gradeNumber - 1] || 0;
+                              } else if (gradeType === "mid") {
+                                currentValue = existingGrade.marks.mid || 0;
+                              } else if (gradeType === "final") {
+                                currentValue = existingGrade.marks.final || 0;
+                              }
+                            }
 
+                            const displayValue = bulkGrades[student.studentId]?.obtained ?? "";
 
-                          {/* Global Maximum Marks */}
-                          <Input
-                            className="w-4/12"
-                            label="Max Marks"
-                            type="number"
-                            min="0"
-                            value={globalMaxMarks}
-                            onChange={(e) => setGlobalMaxMarks(parseFloat(e.target.value) || 100)}
-                            placeholder="100"
-                          />
-                        </div>
-                        {/* Bulk Grade Entry for All Students */}
-                        <div className="space-y-3">
-                          <label className="block text-sm font-medium text-gray-700 mb-3">
-                            Enter Grades for Enrolled Students ({enrolledStudents.length})
-                          </label>
-                          {enrolledStudents.length === 0 ? (
-                            <p className="text-sm text-gray-500 py-4 text-center">
-                              No students enrolled in this course
-                            </p>
-                          ) : (
-                            <>
-                            <div className="space-y-4">
-                              <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
-                                <table className="w-full">
-                                  <thead className="bg-gray-50 sticky top-0">
-                                    <tr>
-                                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Student Name</th>
-                                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 border-b">Marks Obtained</th>
-                                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 border-b">Total Marks</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody className="bg-white divide-y divide-gray-200">
-                                    {enrolledStudents.map((student) => {
-                                      const existingGrade = grades.find(g => g.studentId === student.studentId);
-                                      let currentValue = 0;
-                                      let currentMax = 100;
-
-                                      // Get existing value for this grade type
-                                      if (existingGrade) {
-                                        if (gradeType === "assignment") {
-                                          currentValue = existingGrade.marks.assignments[gradeNumber - 1] || 0;
-                                          currentMax = existingGrade.marks.maxAssignments[gradeNumber - 1] || 100;
-                                        } else if (gradeType === "quiz") {
-                                          currentValue = existingGrade.marks.quizzes[gradeNumber - 1] || 0;
-                                          currentMax = existingGrade.marks.maxQuizzes[gradeNumber - 1] || 100;
-                                        } else if (gradeType === "mid") {
-                                          currentValue = existingGrade.marks.mid || 0;
-                                          currentMax = existingGrade.marks.maxMid || 100;
-                                        } else if (gradeType === "final") {
-                                          currentValue = existingGrade.marks.final || 0;
-                                          currentMax = existingGrade.marks.maxFinal || 100;
+                            return (
+                              <tr key={student.studentId}>
+                                <td style={tdStyle}>
+                                  <p style={{ margin: 0, fontWeight: '500', color: '#111827' }}>{student.name}</p>
+                                  <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#6b7280' }}>{student.studentId}</p>
+                                </td>
+                                <td style={{ ...tdStyle, textAlign: 'center' }}>
+                                  <span style={{
+                                    padding: '4px 10px',
+                                    background: '#f3f4f6',
+                                    borderRadius: '6px',
+                                    fontSize: '13px',
+                                    color: '#374151',
+                                  }}>
+                                    {currentValue}
+                                  </span>
+                                </td>
+                                <td style={{ ...tdStyle, textAlign: 'center' }}>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    placeholder="0"
+                                    value={displayValue}
+                                    onChange={(e) => {
+                                      const value = parseFloat(e.target.value);
+                                      if (value < 0) return;
+                                      setBulkGrades(prev => ({
+                                        ...prev,
+                                        [student.studentId]: {
+                                          obtained: value || 0,
+                                          max: globalMaxMarks
                                         }
-                                      }
-
-                                      // Use bulk grades if set, otherwise use existing value
-                                      const displayValue = bulkGrades[student.studentId]?.obtained ?? (currentValue || "");
-
-                                      return (
-                                        <tr key={student.studentId} className="hover:bg-gray-50 ">
-                                          <td className="p-2 text-sm text-center font-medium text-gray-900">{student.name}</td>
-                                          <td className="p-2 text-center">
-                                            <input
-                                              type="number"
-                                              min="0"
-                                              placeholder="0"
-                                              value={displayValue}
-                                              onChange={(e) => {
-                                                const value = parseFloat(e.target.value);
-                                                if (value < 0) return;
-                                                setBulkGrades(prev => ({
-                                                  ...prev,
-                                                  [student.studentId]: {
-                                                    obtained: value || 0,
-                                                    max: globalMaxMarks
-                                                  }
-                                                }));
-                                              }}
-                                              className="w-24 p-2 border border-gray-300 rounded-lg text-sm text-center"
-                                            />
-                                          </td>
-                                          <td className="p-2 text-center text-sm text-gray-600">
-                                            {globalMaxMarks}
-                                          </td>
-                                        </tr>
-                                      );
-                                    })}
-                                  </tbody>
-                                </table>
-                              </div>
-                              <Button variant="primary" onClick={handleSaveAllGrades} className="w-1/6">
-                                Save All Grades
-                              </Button>
-                            </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </Card>
-
-                    {/* Grades Table */}
-                    <Card>
-                      <CardHeader className="p-4">All Student Grades</CardHeader>
-                      <div className="p-6 overflow-x-auto">
-                        {loading ? (
-                          <p className="text-center text-gray-500 py-4">Loading...</p>
-                        ) : grades.length === 0 ? (
-                          <p className="text-center text-gray-500 py-4">No grades recorded yet</p>
-                        ) : (
-                          <table className="w-full text-sm">
-                            <thead className="bg-gray-50">
-                              <tr>
-                                <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
-                                <th className="p-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">A1</th>
-                                <th className="p-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">A2</th>
-                                <th className="p-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">A3</th>
-                                <th className="p-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">A4</th>
-                                <th className="p-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Q1</th>
-                                <th className="p-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Q2</th>
-                                <th className="p-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Q3</th>
-                                <th className="p-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Q4</th>
-                                <th className="p-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Mid</th>
-                                <th className="p-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Final</th>
-                                <th className="p-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Total</th>
-                                <th className="p-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">GPA</th>
+                                      }));
+                                    }}
+                                    style={inputStyle}
+                                  />
+                                </td>
+                                <td style={{ ...tdStyle, textAlign: 'center', fontWeight: '500' }}>{globalMaxMarks}</td>
                               </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                              {grades.map((grade) => {
-                                const student = students.find(s => s.studentId === grade.studentId);
-                                const total = calculateTotal(grade.marks);
-                                const gpa = calculateGPA(total);
-                                return (
-                                  <tr key={grade.studentId} className="hover:bg-gray-50">
-                                    <td className="p-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                      {student?.name || grade.studentId}
-                                    </td>
-                                    {[0, 1, 2, 3].map((i) => (
-                                      <td key={`a${i}`} className="p-4 text-center text-sm text-gray-600">
-                                        {grade.marks.assignments[i] !== undefined
-                                          ? `${grade.marks.assignments[i]}/${grade.marks.maxAssignments[i] || 100}`
-                                          : "-"}
-                                      </td>
-                                    ))}
-                                    {[0, 1, 2, 3].map((i) => (
-                                      <td key={`q${i}`} className="p-4 text-center text-sm text-gray-600">
-                                        {grade.marks.quizzes[i] !== undefined
-                                          ? `${grade.marks.quizzes[i]}/${grade.marks.maxQuizzes[i] || 100}`
-                                          : "-"}
-                                      </td>
-                                    ))}
-                                    <td className="p-4  text-center text-sm text-gray-600">
-                                      {grade.marks.mid > 0 ? `${grade.marks.mid}/${grade.marks.maxMid}` : "-"}
-                                    </td>
-                                    <td className="p-4 text-center text-sm text-gray-600">
-                                      {grade.marks.final > 0 ? `${grade.marks.final}/${grade.marks.maxFinal}` : "-"}
-                                    </td>
-                                    <td className="p-4 text-center text-sm font-semibold text-gray-900">
-                                      {total.toFixed(1)}%
-                                    </td>
-                                    <td className="p-4 text-center">
-                                      <span
-                                      >
-                                        {gpa.toFixed(2)}
-                                      </span>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        )}
-                      </div>
-                    </Card>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div style={{ marginTop: '16px' }}>
+                      <Button variant="primary" onClick={handleSaveAllGrades}>
+                        <Save size={16} />
+                        Save All Grades
+                      </Button>
+                    </div>
                   </>
                 )}
               </div>
+            </div>
+
+            {/* Grades Overview */}
+            <div style={sectionStyle}>
+              <div style={sectionHeaderStyle}>
+                <Award size={18} color="#4f46e5" />
+                <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#111827' }}>All Student Grades</h2>
+              </div>
+              {grades.length === 0 ? (
+                <div style={{ padding: '60px', textAlign: 'center', color: '#6b7280' }}>
+                  <Award size={40} style={{ margin: '0 auto 12px', opacity: 0.5 }} />
+                  <p style={{ margin: 0 }}>No grades recorded yet</p>
+                </div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={tableStyle}>
+                    <thead>
+                      <tr>
+                        <th style={thStyle}>Student</th>
+                        <th style={{ ...thStyle, textAlign: 'center' }}>A1</th>
+                        <th style={{ ...thStyle, textAlign: 'center' }}>A2</th>
+                        <th style={{ ...thStyle, textAlign: 'center' }}>A3</th>
+                        <th style={{ ...thStyle, textAlign: 'center' }}>A4</th>
+                        <th style={{ ...thStyle, textAlign: 'center' }}>Q1</th>
+                        <th style={{ ...thStyle, textAlign: 'center' }}>Q2</th>
+                        <th style={{ ...thStyle, textAlign: 'center' }}>Q3</th>
+                        <th style={{ ...thStyle, textAlign: 'center' }}>Q4</th>
+                        <th style={{ ...thStyle, textAlign: 'center' }}>Mid</th>
+                        <th style={{ ...thStyle, textAlign: 'center' }}>Final</th>
+                        <th style={{ ...thStyle, textAlign: 'center' }}>Total</th>
+                        <th style={{ ...thStyle, textAlign: 'center' }}>GPA</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {grades.map((grade) => {
+                        const student = students.find(s => s.studentId === grade.studentId);
+                        const total = calculateTotal(grade.marks);
+                        const gpa = calculateGPA(total);
+                        return (
+                          <tr key={grade.studentId}>
+                            <td style={tdStyle}>
+                              <p style={{ margin: 0, fontWeight: '500', color: '#111827' }}>{student?.name || grade.studentId}</p>
+                            </td>
+                            {[0, 1, 2, 3].map((i) => (
+                              <td key={`a${i}`} style={{ ...tdStyle, textAlign: 'center', fontSize: '12px' }}>
+                                {grade.marks.assignments[i] !== undefined
+                                  ? `${grade.marks.assignments[i]}/${grade.marks.maxAssignments[i] || 100}`
+                                  : "-"}
+                              </td>
+                            ))}
+                            {[0, 1, 2, 3].map((i) => (
+                              <td key={`q${i}`} style={{ ...tdStyle, textAlign: 'center', fontSize: '12px' }}>
+                                {grade.marks.quizzes[i] !== undefined
+                                  ? `${grade.marks.quizzes[i]}/${grade.marks.maxQuizzes[i] || 100}`
+                                  : "-"}
+                              </td>
+                            ))}
+                            <td style={{ ...tdStyle, textAlign: 'center', fontSize: '12px' }}>
+                              {grade.marks.mid > 0 ? `${grade.marks.mid}/${grade.marks.maxMid}` : "-"}
+                            </td>
+                            <td style={{ ...tdStyle, textAlign: 'center', fontSize: '12px' }}>
+                              {grade.marks.final > 0 ? `${grade.marks.final}/${grade.marks.maxFinal}` : "-"}
+                            </td>
+                            <td style={{ ...tdStyle, textAlign: 'center', fontWeight: '600', color: '#4f46e5' }}>
+                              {total.toFixed(1)}%
+                            </td>
+                            <td style={{ ...tdStyle, textAlign: 'center' }}>
+                              <span style={{
+                                padding: '4px 10px',
+                                background: gpa >= 3.0 ? '#ecfdf5' : gpa >= 2.0 ? '#fef3c7' : '#fef2f2',
+                                color: gpa >= 3.0 ? '#059669' : gpa >= 2.0 ? '#d97706' : '#dc2626',
+                                borderRadius: '6px',
+                                fontWeight: '600',
+                                fontSize: '12px',
+                              }}>
+                                {gpa.toFixed(2)}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </>
         )}

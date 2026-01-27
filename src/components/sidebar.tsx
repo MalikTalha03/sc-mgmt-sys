@@ -9,7 +9,10 @@ import {
   UserCircle,
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Users,
+  ClipboardList,
+  Lock
 } from "lucide-react";
 
 export function Sidebar() {
@@ -18,18 +21,43 @@ export function Sidebar() {
   const navigate = useNavigate();
   const { userData, logout } = useAuth();
 
+  // All menu items with their access roles
   const allMenuItems = [
     { path: "/admin", label: "Dashboard", icon: Home, roles: ["admin"] },
-    { path: "/courses", label: "Courses", icon: BookOpen, roles: ["admin"] },
-    { path: "/departments", label: "Departments", icon: Building2, roles: ["admin"] },
+    { path: "/admin/students", label: "Students", icon: GraduationCap, roles: ["admin"] },
+    { path: "/admin/teachers", label: "Teachers", icon: Users, roles: ["admin"] },
+    { path: "/admin/courses", label: "Courses", icon: BookOpen, roles: ["admin"] },
+    { path: "/admin/departments", label: "Departments", icon: Building2, roles: ["admin"] },
+    { path: "/admin/enrollments", label: "Enrollments", icon: ClipboardList, roles: ["admin"] },
     { path: "/student", label: "My Portal", icon: GraduationCap, roles: ["student"] },
     { path: "/teacher", label: "My Portal", icon: UserCircle, roles: ["teacher"] },
   ];
 
-  // Filter menu items based on user role
-  const menuItems = allMenuItems.filter(
-    (item) => userData && item.roles.includes(userData.role)
-  );
+  // Get items relevant to user's context (admin sees admin items, student sees student items, etc.)
+  const getContextMenuItems = () => {
+    if (!userData) return [];
+    
+    if (userData.role === "admin") {
+      return allMenuItems.filter(item => item.roles.includes("admin"));
+    } else if (userData.role === "student") {
+      // Student sees their portal + disabled admin items
+      const studentItems = allMenuItems.filter(item => item.roles.includes("student"));
+      const adminItems = allMenuItems.filter(item => item.roles.includes("admin"));
+      return [...studentItems, ...adminItems];
+    } else if (userData.role === "teacher") {
+      // Teacher sees their portal + disabled admin items
+      const teacherItems = allMenuItems.filter(item => item.roles.includes("teacher"));
+      const adminItems = allMenuItems.filter(item => item.roles.includes("admin"));
+      return [...teacherItems, ...adminItems];
+    }
+    return [];
+  };
+
+  const menuItems = getContextMenuItems();
+
+  const hasAccess = (item: typeof allMenuItems[0]) => {
+    return userData && item.roles.includes(userData.role);
+  };
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -139,10 +167,44 @@ export function Sidebar() {
       )}
 
       {/* Menu Items */}
-      <nav style={{ flex: 1, padding: '16px 12px' }}>
+      <nav style={{ flex: 1, padding: '16px 12px', overflowY: 'auto' }}>
         {menuItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
+          const accessible = hasAccess(item);
+          
+          if (!accessible) {
+            // Disabled item - not clickable
+            return (
+              <div
+                key={item.path}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '12px 14px',
+                  marginBottom: '4px',
+                  borderRadius: '10px',
+                  background: 'transparent',
+                  color: '#d1d5db',
+                  fontWeight: '500',
+                  fontSize: '14px',
+                  cursor: 'not-allowed',
+                  opacity: 0.6,
+                }}
+                title={`${item.label} - Admin access required`}
+              >
+                <Icon size={20} />
+                {isOpen && (
+                  <>
+                    <span style={{ flex: 1 }}>{item.label}</span>
+                    <Lock size={14} />
+                  </>
+                )}
+              </div>
+            );
+          }
+
           return (
             <Link
               key={item.path}

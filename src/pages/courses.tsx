@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Card, CardHeader } from "../components/card";
 import { Button } from "../components/button";
 import {
   getAllCourses,
@@ -10,6 +9,16 @@ import {
 } from "../firebase";
 import type { Course } from "../models/course";
 import type { Teacher } from "../models/teacher";
+import { 
+  BookOpen, 
+  Users, 
+  UserCheck, 
+  UserX, 
+  Loader2,
+  GraduationCap,
+  Building2,
+  Clock
+} from "lucide-react";
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -34,7 +43,6 @@ export default function CoursesPage() {
       setCourses(coursesData);
       setTeachers(teachersData);
 
-      // Load enrollment counts for each course
       const counts: Record<string, number> = {};
       for (const course of coursesData) {
         counts[course.code] = await countCourseEnrollments(course.code);
@@ -86,149 +94,262 @@ export default function CoursesPage() {
     }
   };
 
+  const containerStyle: React.CSSProperties = {
+    minHeight: '100vh',
+    background: '#f3f4f6',
+  };
+
+  const contentStyle: React.CSSProperties = {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: '32px 24px',
+  };
+
+  const statsRowStyle: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, 1fr)',
+    gap: '16px',
+    marginBottom: '32px',
+  };
+
+  const statCardStyle: React.CSSProperties = {
+    background: 'white',
+    borderRadius: '12px',
+    padding: '20px',
+    border: '1px solid #e5e7eb',
+  };
+
+  const tableContainerStyle: React.CSSProperties = {
+    background: 'white',
+    borderRadius: '12px',
+    border: '1px solid #e5e7eb',
+    overflow: 'hidden',
+  };
+
+  const tableStyle: React.CSSProperties = {
+    width: '100%',
+    borderCollapse: 'collapse',
+  };
+
+  const thStyle: React.CSSProperties = {
+    padding: '14px 16px',
+    textAlign: 'left',
+    fontSize: '12px',
+    fontWeight: '600',
+    color: '#6b7280',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    background: '#f9fafb',
+    borderBottom: '1px solid #e5e7eb',
+  };
+
+  const tdStyle: React.CSSProperties = {
+    padding: '16px',
+    fontSize: '14px',
+    color: '#374151',
+    borderBottom: '1px solid #e5e7eb',
+  };
+
+  const badgeStyle: React.CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '4px 10px',
+    borderRadius: '6px',
+    fontSize: '12px',
+    fontWeight: '500',
+  };
+
+  const totalStudents = Object.values(enrollmentCounts).reduce((a, b) => a + b, 0);
+  const coursesWithTeacher = courses.filter(c => getTeacherForCourse(c.code)).length;
+  const totalCredits = courses.reduce((sum, c) => sum + c.creditHours, 0);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2 tracking-tight">Courses Management</h1>
-          <p className="text-gray-600">View all courses and manage faculty assignments efficiently</p>
+    <div style={containerStyle}>
+      <div style={contentStyle}>
+        {/* Header */}
+        <div style={{ marginBottom: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+            <BookOpen size={28} color="#4f46e5" />
+            <h1 style={{ fontSize: '26px', fontWeight: '700', color: '#111827', margin: 0 }}>
+              Courses
+            </h1>
+          </div>
+          <p style={{ color: '#6b7280', fontSize: '14px', margin: 0, marginLeft: '40px' }}>
+            Manage courses and faculty assignments
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-4">
-            {loading ? (
-              <p className="text-center text-gray-500 py-8">Loading courses...</p>
-            ) : courses.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">No courses found</p>
-            ) : (
-              <div className="grid grid-cols-3 md:grid-cols-2 gap-4">
+        {/* Stats Row */}
+        <div style={statsRowStyle}>
+          <div style={statCardStyle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ padding: '10px', background: '#eef2ff', borderRadius: '10px' }}>
+                <BookOpen size={20} color="#4f46e5" />
+              </div>
+              <div>
+                <p style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#111827' }}>{courses.length}</p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>Total Courses</p>
+              </div>
+            </div>
+          </div>
+          <div style={statCardStyle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ padding: '10px', background: '#ecfdf5', borderRadius: '10px' }}>
+                <UserCheck size={20} color="#059669" />
+              </div>
+              <div>
+                <p style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#111827' }}>{coursesWithTeacher}</p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>With Instructor</p>
+              </div>
+            </div>
+          </div>
+          <div style={statCardStyle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ padding: '10px', background: '#fef3c7', borderRadius: '10px' }}>
+                <GraduationCap size={20} color="#d97706" />
+              </div>
+              <div>
+                <p style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#111827' }}>{totalStudents}</p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>Total Enrollments</p>
+              </div>
+            </div>
+          </div>
+          <div style={statCardStyle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ padding: '10px', background: '#f3e8ff', borderRadius: '10px' }}>
+                <Clock size={20} color="#7c3aed" />
+              </div>
+              <div>
+                <p style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#111827' }}>{totalCredits}</p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>Total Credits</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Courses Table */}
+        <div style={tableContainerStyle}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid #e5e7eb' }}>
+            <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#111827' }}>All Courses</h2>
+          </div>
+          
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '60px', color: '#6b7280' }}>
+              <Loader2 size={32} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 12px' }} />
+              <p>Loading courses...</p>
+            </div>
+          ) : courses.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px', color: '#6b7280' }}>
+              <BookOpen size={48} style={{ margin: '0 auto 12px', opacity: 0.5 }} />
+              <p>No courses found</p>
+            </div>
+          ) : (
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>Course</th>
+                  <th style={thStyle}>Department</th>
+                  <th style={{ ...thStyle, textAlign: 'center' }}>Credits</th>
+                  <th style={{ ...thStyle, textAlign: 'center' }}>Semester</th>
+                  <th style={{ ...thStyle, textAlign: 'center' }}>Students</th>
+                  <th style={thStyle}>Instructor</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
                 {courses.map((course) => {
                   const teacher = getTeacherForCourse(course.code);
                   return (
-                    <Card key={course.code} hover>
-                      <div className="p-6">
-                        <div className="mb-4">
-                          <h3 className="text-xl font-bold text-gray-900">{course.title}</h3>
-                          <p className="text-sm text-gray-600">{course.code}</p>
+                    <tr key={course.code} style={{ background: 'white' }}>
+                      <td style={tdStyle}>
+                        <div>
+                          <p style={{ margin: 0, fontWeight: '600', color: '#111827' }}>{course.title}</p>
+                          <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#6b7280' }}>{course.code}</p>
                         </div>
-                        <div className="space-y-2 mb-4">
-                          <p className="text-sm text-gray-600">
-                            <span className="font-medium">Department:</span> {course.departmentCode}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            <span className="font-medium">Credits:</span> {course.creditHours}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            <span className="font-medium">Semester:</span> {course.semester}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            <span className="font-medium">Enrolled:</span> {enrollmentCounts[course.code] || 0} students
-                          </p>
-                        </div>
-                        
+                      </td>
+                      <td style={tdStyle}>
+                        <span style={{ ...badgeStyle, background: '#eef2ff', color: '#4f46e5' }}>
+                          <Building2 size={12} />
+                          {course.departmentCode}
+                        </span>
+                      </td>
+                      <td style={{ ...tdStyle, textAlign: 'center', fontWeight: '600' }}>{course.creditHours}</td>
+                      <td style={{ ...tdStyle, textAlign: 'center' }}>{course.semester}</td>
+                      <td style={{ ...tdStyle, textAlign: 'center' }}>
+                        <span style={{ ...badgeStyle, background: '#f3f4f6', color: '#374151' }}>
+                          <Users size={12} />
+                          {enrollmentCounts[course.code] || 0}
+                        </span>
+                      </td>
+                      <td style={tdStyle}>
                         {teacher ? (
-                          <div className="space-y-3">
-                            <div className="p-3 bg-emerald-50 rounded-lg">
-                              <p className="text-sm font-medium text-gray-700">Instructor:</p>
-                              <p className="text-sm text-gray-900">{teacher.name}</p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{
+                              width: '32px',
+                              height: '32px',
+                              background: '#ecfdf5',
+                              borderRadius: '50%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}>
+                              <UserCheck size={14} color="#059669" />
                             </div>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              fullWidth
-                              onClick={() => handleUnassignTeacher(course.code)}
+                            <span style={{ fontWeight: '500', color: '#059669' }}>{teacher.name}</span>
+                          </div>
+                        ) : (
+                          <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>Not assigned</span>
+                        )}
+                      </td>
+                      <td style={{ ...tdStyle, textAlign: 'right' }}>
+                        {teacher ? (
+                          <Button variant="danger" size="sm" onClick={() => handleUnassignTeacher(course.code)}>
+                            <UserX size={14} />
+                            Unassign
+                          </Button>
+                        ) : selectedCourse === course.code ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
+                            <select
+                              value={selectedTeacher}
+                              onChange={(e) => setSelectedTeacher(e.target.value)}
+                              style={{
+                                padding: '6px 10px',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '6px',
+                                fontSize: '13px',
+                                minWidth: '150px',
+                              }}
                             >
-                              Unassign Instructor
+                              <option value="">Select teacher</option>
+                              {teachers
+                                .filter(t => t.departmentCode === course.departmentCode)
+                                .map((t) => (
+                                  <option key={t.id} value={t.id}>
+                                    {t.name}
+                                  </option>
+                                ))}
+                            </select>
+                            <Button variant="primary" size="sm" onClick={() => handleAssignTeacher(course.code)}>
+                              Save
+                            </Button>
+                            <Button variant="secondary" size="sm" onClick={() => setSelectedCourse(null)}>
+                              Cancel
                             </Button>
                           </div>
                         ) : (
-                          <div className="space-y-3">
-                            <span >No Instructor Assigned</span>
-                            {selectedCourse === course.code ? (
-                              <div className="space-y-2">
-                                <select
-                                  value={selectedTeacher}
-                                  onChange={(e) => setSelectedTeacher(e.target.value)}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                >
-                                  <option value="">Select Teacher</option>
-                                  {teachers
-                                    .filter(t => t.departmentCode === course.departmentCode)
-                                    .map((t) => (
-                                      <option key={t.id} value={t.id}>
-                                        {t.name} ({t.assignedCourses.length} courses)
-                                      </option>
-                                    ))}
-                                </select>
-                                <div className="flex gap-2">
-                                  <Button
-                                    variant="primary"
-                                    size="sm"
-                                    onClick={() => handleAssignTeacher(course.code)}
-                                  >
-                                    Assign
-                                  </Button>
-                                  <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={() => setSelectedCourse(null)}
-                                  >
-                                    Cancel
-                                  </Button>
-                                </div>
-                              </div>
-                            ) : (
-                              <Button
-                                variant="primary"
-                                size="sm"
-                                fullWidth
-                                onClick={() => setSelectedCourse(course.code)}
-                              >
-                                Assign Instructor
-                              </Button>
-                            )}
-                          </div>
+                          <Button variant="primary" size="sm" onClick={() => setSelectedCourse(course.code)}>
+                            <UserCheck size={14} />
+                            Assign
+                          </Button>
                         )}
-                      </div>
-                    </Card>
+                      </td>
+                    </tr>
                   );
                 })}
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-6">
-      
-
-            <Card>
-              <CardHeader className="p-4">Available Faculty</CardHeader>
-              <div className="p-6 grid grid-cols-3 md:grid-cols-2 gap-4">
-                {teachers.length === 0 ? (
-                  <p className="text-center text-gray-500 py-4">No teachers found</p>
-                ) : (
-                  teachers.map((teacher) => (
-                    <div key={teacher.id} className="p-4 bg-gradient-to-r from-gray-50 to-emerald-50 rounded-xl border border-gray-200 hover:border-emerald-300 transition-all">
-                      <div className="flex items-center justify-between mb-3">
-                        <p className="font-bold text-gray-900">{teacher.name}</p>
-                        <span>{teacher.departmentCode}</span>
-                      </div>
-                      <div className="text-sm text-gray-600 mb-2">
-                        <span className="font-semibold text-indigo-600">{teacher.assignedCourses.length}</span> / 3 Courses Assigned
-                      </div>
-                      <div className="relative">
-                        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                          <div
-                            className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${(teacher.assignedCourses.length / 3) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </Card>
-          </div>
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

@@ -15,16 +15,23 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  getAuth,
 } from "firebase/auth";
+import { initializeApp } from "firebase/app";
 import type { User } from "firebase/auth";
 import { db } from "./db";
-import { auth } from "./firebase";
+import { auth, firebaseConfig } from "./firebase";
 import type { AppUser, UserRole } from "../models/user";
 
 const COLLECTION_NAME = "users";
 
+// Create a secondary app instance for creating users without signing them in
+const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+const secondaryAuth = getAuth(secondaryApp);
+
 /**
  * Register a new user with email and password
+ * Uses secondary auth instance to avoid logging out the current admin
  */
 export async function registerUser(
   email: string,
@@ -33,9 +40,12 @@ export async function registerUser(
   linkedId: string = ""
 ): Promise<AppUser> {
   try {
-    // Create Firebase Auth user
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    // Create Firebase Auth user using secondary auth (doesn't affect current session)
+    const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
     const { uid } = userCredential.user;
+
+    // Sign out from secondary auth immediately
+    await signOut(secondaryAuth);
 
     // Create user document in Firestore
     const userData: AppUser = {
@@ -163,4 +173,29 @@ export function onAuthChange(callback: (user: User | null) => void): () => void 
  */
 export function getCurrentAuthUser(): User | null {
   return auth.currentUser;
+}
+
+/**
+ * Get all users
+ */
+export async function getAllUsers(): Promise<AppUser[]> {
+  try {
+    const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
+    return querySnapshot.docs.map(doc => doc.data() as AppUser);
+  } catch (error) {
+    console.error("Error getting all users:", error);
+    throw error;
+  }
+}
+
+/**
+ * Delete user document from Firestore
+ */
+export async function deleteUserDoc(uid: string): Promise<void> {
+  try {
+    await deleteDoc(doc(db, COLLECTION_NAME, uid));
+  } catch (error) {
+    console.error("Error deleting user doc:", error);
+    throw error;
+  }
 }

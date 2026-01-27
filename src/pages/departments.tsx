@@ -1,11 +1,8 @@
 import { useState, useEffect } from "react";
-import { DepartmentForm } from "../components/departmentForm";
 import { Card, CardHeader } from "../components/card";
 import { Button } from "../components/button";
 import {
   getAllDepartments,
-  createDepartment,
-  updateDepartment,
   deleteDepartment,
   toggleDepartmentStatus,
 } from "../firebase";
@@ -13,6 +10,17 @@ import type { Department } from "../models/department";
 import { getAllStudents } from "../firebase/studentService";
 import { getAllTeachers } from "../firebase/teacherService";
 import { getAllCourses } from "../firebase/courseService";
+import { 
+  Building2, 
+  GraduationCap, 
+  Users, 
+  BookOpen, 
+  Trash2, 
+  Power,
+  Loader2,
+  CheckCircle,
+  XCircle
+} from "lucide-react";
 
 export default function DepartmentsPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -23,7 +31,6 @@ export default function DepartmentsPage() {
     loadDepartments();
   }, []);
 
-  // Load stats whenever departments change
   useEffect(() => {
     if (departments.length > 0) {
       loadStats();
@@ -67,18 +74,6 @@ export default function DepartmentsPage() {
     }
   };
 
-  const handleCreateDepartment = async (data: { code: string; name: string; isActive: boolean }) => {
-    try {
-      await createDepartment(data);
-      alert("Department created successfully!");
-      loadDepartments();
-      loadStats();
-    } catch (error) {
-      console.error("Error creating department:", error);
-      alert("Failed to create department");
-    }
-  };
-
   const handleDeleteDepartment = async (code: string) => {
     if (!confirm(`Are you sure you want to delete department ${code}?`)) return;
 
@@ -104,68 +99,189 @@ export default function DepartmentsPage() {
     }
   };
 
+  const containerStyle: React.CSSProperties = {
+    minHeight: '100vh',
+    background: '#f3f4f6',
+  };
+
+  const contentStyle: React.CSSProperties = {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: '32px 24px',
+  };
+
+  const deptCardStyle: React.CSSProperties = {
+    padding: '24px',
+    background: 'white',
+    borderRadius: '16px',
+    border: '1px solid #e5e7eb',
+    marginBottom: '16px',
+  };
+
+  const statBoxStyle: React.CSSProperties = {
+    textAlign: 'center' as const,
+    padding: '16px',
+    background: '#f9fafb',
+    borderRadius: '12px',
+    border: '1px solid #e5e7eb',
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2 tracking-tight">Departments Management</h1>
-          <p className="text-gray-600">Manage all academic departments and their resources</p>
+    <div style={containerStyle}>
+      <div style={contentStyle}>
+        {/* Header */}
+        <div style={{ marginBottom: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+            <Building2 size={32} color="#4f46e5" />
+            <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#111827', margin: 0 }}>
+              Departments
+            </h1>
+          </div>
+          <p style={{ color: '#6b7280', fontSize: '15px', margin: 0, marginLeft: '44px' }}>
+            View all academic departments and their resources
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <DepartmentForm onSubmit={handleCreateDepartment} />
+        {/* Summary Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '32px' }}>
+          <div style={{ ...statBoxStyle, background: 'white' }}>
+            <Building2 size={24} color="#4f46e5" style={{ margin: '0 auto 8px' }} />
+            <p style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: '#4f46e5' }}>{departments.length}</p>
+            <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6b7280' }}>Total Departments</p>
           </div>
+          <div style={{ ...statBoxStyle, background: 'white' }}>
+            <GraduationCap size={24} color="#059669" style={{ margin: '0 auto 8px' }} />
+            <p style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: '#059669' }}>
+              {Object.values(stats).reduce((sum, s) => sum + s.students, 0)}
+            </p>
+            <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6b7280' }}>Total Students</p>
+          </div>
+          <div style={{ ...statBoxStyle, background: 'white' }}>
+            <Users size={24} color="#0284c7" style={{ margin: '0 auto 8px' }} />
+            <p style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: '#0284c7' }}>
+              {Object.values(stats).reduce((sum, s) => sum + s.teachers, 0)}
+            </p>
+            <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6b7280' }}>Total Faculty</p>
+          </div>
+          <div style={{ ...statBoxStyle, background: 'white' }}>
+            <BookOpen size={24} color="#7c3aed" style={{ margin: '0 auto 8px' }} />
+            <p style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: '#7c3aed' }}>
+              {Object.values(stats).reduce((sum, s) => sum + s.courses, 0)}
+            </p>
+            <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6b7280' }}>Total Courses</p>
+          </div>
+        </div>
 
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader className="p-2">All Departments</CardHeader>
-              <div className="p-6 space-y-4">
-                {loading ? (
-                  <p className="text-center text-gray-500 py-8">Loading departments...</p>
-                ) : departments.length === 0 ? (
-                  <p className="text-center text-gray-500 py-8">No departments found</p>
-                ) : (
-                  departments.map((dept) => (
-                    <div key={dept.code} className="p-6 bg-gradient-to-r from-gray-50 to-indigo-50 rounded-xl border border-gray-200 hover:border-indigo-300 transition-all">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className="text-xl font-bold text-gray-900">{dept.name}</h3>
-                          <p className="text-sm text-gray-600">Code: {dept.code}</p>
-                        </div>
-                        <span>
-                          {dept.isActive ? "Active" : "Inactive"}
-                        </span>
+        {/* Departments List */}
+        <Card>
+          <CardHeader>All Departments</CardHeader>
+          <div style={{ padding: '20px' }}>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '60px', color: '#6b7280' }}>
+                <Loader2 size={32} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 12px' }} />
+                <p>Loading departments...</p>
+              </div>
+            ) : departments.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px', color: '#6b7280' }}>
+                <Building2 size={48} style={{ margin: '0 auto 12px', opacity: 0.5 }} />
+                <p>No departments found</p>
+                <p style={{ fontSize: '14px' }}>Add departments from the Admin Dashboard</p>
+              </div>
+            ) : (
+              departments.map((dept) => (
+                <div key={dept.code} style={deptCardStyle}>
+                  {/* Header Row */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{
+                        width: '48px',
+                        height: '48px',
+                        background: '#eef2ff',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        <Building2 size={24} color="#4f46e5" />
                       </div>
-                      <div className="grid grid-cols-3 gap-4 mb-4">
-                        <div className="text-center p-3 bg-white rounded-lg">
-                          <p className="text-2xl font-bold text-blue-600">{stats[dept.code]?.students || 0}</p>
-                          <p className="text-xs text-gray-600 mt-1">Students</p>
-                        </div>
-                        <div className="text-center p-3 bg-white rounded-lg">
-                          <p className="text-2xl font-bold text-green-600">{stats[dept.code]?.teachers || 0}</p>
-                          <p className="text-xs text-gray-600 mt-1">Teachers</p>
-                        </div>
-                        <div className="text-center p-3 bg-white rounded-lg">
-                          <p className="text-2xl font-bold text-purple-600">{stats[dept.code]?.courses || 0}</p>
-                          <p className="text-xs text-gray-600 mt-1">Courses</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-3">
-                        <Button variant="secondary" size="sm" onClick={() => handleToggleStatus(dept.code)}>
-                          {dept.isActive ? "Deactivate" : "Activate"}
-                        </Button>
-                        <Button variant="danger" size="sm" onClick={() => handleDeleteDepartment(dept.code)}>
-                          Delete
-                        </Button>
+                      <div>
+                        <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '600', color: '#111827' }}>
+                          {dept.name}
+                        </h3>
+                        <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>Code: {dept.code}</p>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
-            </Card>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '6px 12px',
+                      background: dept.isActive ? '#ecfdf5' : '#fef2f2',
+                      borderRadius: '20px',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      color: dept.isActive ? '#059669' : '#dc2626',
+                    }}>
+                      {dept.isActive ? <CheckCircle size={14} /> : <XCircle size={14} />}
+                      {dept.isActive ? "Active" : "Inactive"}
+                    </div>
+                  </div>
+
+                  {/* Stats Row */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '20px' }}>
+                    <div style={statBoxStyle}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                        <GraduationCap size={18} color="#059669" />
+                        <span style={{ fontSize: '24px', fontWeight: '700', color: '#059669' }}>
+                          {stats[dept.code]?.students || 0}
+                        </span>
+                      </div>
+                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6b7280' }}>Students</p>
+                    </div>
+                    <div style={statBoxStyle}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                        <Users size={18} color="#0284c7" />
+                        <span style={{ fontSize: '24px', fontWeight: '700', color: '#0284c7' }}>
+                          {stats[dept.code]?.teachers || 0}
+                        </span>
+                      </div>
+                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6b7280' }}>Faculty</p>
+                    </div>
+                    <div style={statBoxStyle}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                        <BookOpen size={18} color="#7c3aed" />
+                        <span style={{ fontSize: '24px', fontWeight: '700', color: '#7c3aed' }}>
+                          {stats[dept.code]?.courses || 0}
+                        </span>
+                      </div>
+                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6b7280' }}>Courses</p>
+                    </div>
+                  </div>
+
+                  {/* Actions Row */}
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <Button 
+                      variant="secondary" 
+                      size="sm" 
+                      onClick={() => handleToggleStatus(dept.code)}
+                    >
+                      <Power size={14} />
+                      {dept.isActive ? "Deactivate" : "Activate"}
+                    </Button>
+                    <Button 
+                      variant="danger" 
+                      size="sm" 
+                      onClick={() => handleDeleteDepartment(dept.code)}
+                    >
+                      <Trash2 size={14} />
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

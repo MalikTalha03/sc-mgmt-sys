@@ -12,6 +12,7 @@ import {
   CheckCircle,
   XCircle,
   Plus,
+  Trash2,
 } from "lucide-react";
 import {
   getAllEnrollments,
@@ -19,6 +20,7 @@ import {
   getAllStudents,
   getAllCourses,
   createEnrollment,
+  cleanupDuplicateEnrollments,
 } from "../../firebase";
 import type { Enrollment } from "../../models/enrollment";
 import type { Student } from "../../models/student";
@@ -128,6 +130,17 @@ export default function AdminEnrollmentsPage() {
     }
   };
 
+  const handleCleanupDuplicates = async () => {
+    if (!confirm("This will remove duplicate enrollments. Continue?")) return;
+    try {
+      const deletedCount = await cleanupDuplicateEnrollments();
+      alert(`Cleanup complete! Removed ${deletedCount} duplicate enrollments.`);
+      loadData();
+    } catch (error) {
+      alert("Failed to cleanup duplicates");
+    }
+  };
+
   const filtered = filterEnrollments();
   const totalPages = getTotalPages(filtered.length);
 
@@ -189,6 +202,9 @@ export default function AdminEnrollmentsPage() {
               <Search size={18} color="#9ca3af" />
               <input type="text" placeholder="Search by student or course..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ flex: 1, border: 'none', outline: 'none', fontSize: '14px', color: '#374151', background: 'transparent' }} />
             </div>
+            <Button variant="danger" onClick={handleCleanupDuplicates}>
+              <Trash2 size={18} /> Cleanup Duplicates
+            </Button>
             <Button variant="primary" onClick={() => setShowAddModal(true)}>
               <Plus size={18} /> Add Enrollment
             </Button>

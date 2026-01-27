@@ -311,3 +311,58 @@ export async function countCourseEnrollments(courseCode: string): Promise<number
     throw error;
   }
 }
+
+/**
+ * Clean up duplicate enrollments - keeps only one enrollment per student+course combination
+ * Priority: approved > pending > rejected > completed (keeps the highest priority one)
+ */
+export async function cleanupDuplicateEnrollments(): Promise<number> {
+  try {
+    console.log("Starting enrollment cleanup...");
+    
+    const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
+    const allDocs = querySnapshot.docs;
+    
+    console.log(`Found ${allDocs.length} total enrollment documents`);
+    
+    // Group by studentId + courseCode
+    const groups: Map<string, { ref: any; data: Enrollment }[]> = new Map();
+    
+    allDocs.forEach(doc => {
+      const data = doc.data() as Enrollment;
+      const key = `${data.studentId}|${data.courseCode}`;
+      
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push({ ref: doc.ref, data });
+    });
+    
+    // Find duplicates and delete extras
+    const priority = ["approved", "pending", "rejected", "completed"];
+    let deletedCount = 0;
+    
+    for (const [key, docs] of groups) {
+      if (docs.length > 1) {
+        console.log(`Found ${docs.length} duplicates for: ${key}`);
+        
+        // Sort by priority - keep the first one (highest priority)
+        docs.sort((a, b) => priority.indexOf(a.data.status) - priority.indexOf(b.data.status));
+        
+        const toDelete = docs.slice(1);
+        
+        for (const doc of toDelete) {
+          console.log(`  Deleting: ${doc.data.status}`);
+          await deleteDoc(doc.ref);
+          deletedCount++;
+        }
+      }
+    }
+    
+    console.log(`Cleanup complete! Deleted ${deletedCount} duplicate enrollments.`);
+    return deletedCount;
+  } catch (error) {
+    console.error("Error during cleanup:", error);
+    throw error;
+  }
+}

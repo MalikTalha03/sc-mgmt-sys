@@ -5,11 +5,16 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import StudentPage from "./pages/student";
 import TeacherPage from "./pages/teacher";
-import AdminPage from "./pages/admin";
-import CoursesPage from "./pages/courses";
-import DepartmentsPage from "./pages/departments";
 import GradesPage from "./pages/grades";
 import LoginPage from "./pages/login";
+
+// Admin pages
+import AdminDashboardPage from "./pages/admin/dashboard";
+import AdminStudentsPage from "./pages/admin/students";
+import AdminTeachersPage from "./pages/admin/teachers";
+import AdminCoursesPage from "./pages/admin/courses";
+import AdminDepartmentsPage from "./pages/admin/departments";
+import AdminEnrollmentsPage from "./pages/admin/enrollments";
 
 function AppContent() {
   const { currentUser, loading } = useAuth();
@@ -38,14 +43,14 @@ function AppContent() {
   return (
     <>
       <Sidebar />
-      <main className="ml-64 transition-all duration-300 min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 p-8">
+      <main style={{ marginLeft: '260px', minHeight: '100vh', background: '#f3f4f6' }}>
         <Routes>
           <Route path="/login" element={<Navigate to="/" replace />} />
           <Route
             path="/"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <AdminPage />
+                <AdminDashboardPage />
               </ProtectedRoute>
             }
           />
@@ -69,23 +74,47 @@ function AppContent() {
             path="/admin"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <AdminPage />
+                <AdminDashboardPage />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/courses"
+            path="/admin/students"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <CoursesPage />
+                <AdminStudentsPage />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/departments"
+            path="/admin/teachers"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <DepartmentsPage />
+                <AdminTeachersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/courses"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminCoursesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/departments"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminDepartmentsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/enrollments"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminEnrollmentsPage />
               </ProtectedRoute>
             }
           />

@@ -26,9 +26,9 @@ export async function createEnrollment(enrollmentData: Omit<Enrollment, "created
     // Check if enrollment already exists
     const existing = await getEnrollment(enrollmentData.studentId, enrollmentData.courseCode);
     if (existing) {
-      // Allow re-application only if the previous enrollment was rejected
-      if (existing.status === "rejected") {
-        // Delete the rejected enrollment so a new one can be created
+      // Allow re-application only if the previous enrollment was rejected or completed
+      if (existing.status === "rejected" || existing.status === "completed") {
+        // Delete the old enrollment so a new one can be created
         await deleteEnrollment(enrollmentData.studentId, enrollmentData.courseCode);
       } else if (existing.status === "pending") {
         throw new Error("Enrollment request already pending for this course");
@@ -67,7 +67,7 @@ export async function createEnrollment(enrollmentData: Omit<Enrollment, "created
 }
 
 /**
- * Get a specific enrollment
+ * Get a specific enrollment (prioritizes active enrollments over completed/rejected)
  */
 export async function getEnrollment(studentId: string, courseCode: string): Promise<Enrollment | null> {
   try {
@@ -79,7 +79,11 @@ export async function getEnrollment(studentId: string, courseCode: string): Prom
     const querySnapshot = await getDocs(q);
     
     if (!querySnapshot.empty) {
-      return querySnapshot.docs[0].data() as Enrollment;
+      // Prioritize: approved > pending > rejected > completed
+      const enrollments = querySnapshot.docs.map(doc => doc.data() as Enrollment);
+      const priority = ["approved", "pending", "rejected", "completed"];
+      enrollments.sort((a, b) => priority.indexOf(a.status) - priority.indexOf(b.status));
+      return enrollments[0];
     }
     return null;
   } catch (error) {
@@ -158,6 +162,47 @@ export async function getPendingEnrollments(): Promise<Enrollment[]> {
 }
 
 /**
+ * Complete all approved enrollments for a student (used when upgrading semester)
+ * This marks all approved enrollments as completed
+ */
+export async function completeAllEnrollmentsForStudent(studentId: string): Promise<void> {
+  try {
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      where("studentId", "==", studentId),
+      where("status", "==", "approved")
+    );
+    const querySnapshot = await getDocs(q);
+    
+    const updatePromises = querySnapshot.docs.map(doc => 
+      updateDoc(doc.ref, { status: "completed" })
+    );
+    
+    await Promise.all(updatePromises);
+    console.log(`Completed ${querySnapshot.docs.length} enrollments for student ${studentId}`);
+  } catch (error) {
+    console.error("Error completing enrollments:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get all enrollments (with id included)
+ */
+export async function getAllEnrollments(): Promise<(Enrollment & { id: string })[]> {
+  try {
+    const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
+    return querySnapshot.docs.map(doc => ({
+      ...doc.data(),
+      id: doc.id,
+    })) as (Enrollment & { id: string })[];
+  } catch (error) {
+    console.error("Error getting all enrollments:", error);
+    throw error;
+  }
+}
+
+/**
  * Update enrollment status and manage credit hours
  */
 export async function updateEnrollmentStatus(
@@ -209,7 +254,7 @@ export async function updateEnrollmentStatus(
 }
 
 /**
- * Delete an enrollment and update credit hours if it was approved
+ * Delete all enrollments for a student+course combination and update credit hours if any was approved
  */
 export async function deleteEnrollment(studentId: string, courseCode: string): Promise<void> {
   try {
@@ -221,11 +266,13 @@ export async function deleteEnrollment(studentId: string, courseCode: string): P
     const querySnapshot = await getDocs(q);
     
     if (!querySnapshot.empty) {
-      const enrollment = querySnapshot.docs[0].data() as Enrollment;
-      const docRef = querySnapshot.docs[0].ref;
+      // Check if any enrollment was approved (for credit hour adjustment)
+      const hasApproved = querySnapshot.docs.some(doc => 
+        (doc.data() as Enrollment).status === "approved"
+      );
       
-      // If enrollment was approved, subtract credit hours before deleting
-      if (enrollment.status === "approved") {
+      // If any enrollment was approved, subtract credit hours (only once)
+      if (hasApproved) {
         const student = await getStudentById(studentId);
         const course = await getCourseByCode(courseCode);
         
@@ -235,7 +282,9 @@ export async function deleteEnrollment(studentId: string, courseCode: string): P
         }
       }
       
-      await deleteDoc(docRef);
+      // Delete ALL matching documents (clean up duplicates)
+      const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+      await Promise.all(deletePromises);
     } else {
       throw new Error("Enrollment not found");
     }

@@ -1,15 +1,8 @@
 import { useState, useEffect } from "react";
 import { Card, CardHeader } from "../components/card";
 import { Button } from "../components/button";
-import {
-  getAllDepartments,
-  deleteDepartment,
-  toggleDepartmentStatus,
-} from "../firebase";
-import type { Department } from "../models/department";
-import { getAllStudents } from "../firebase/studentService";
-import { getAllTeachers } from "../firebase/teacherService";
-import { getAllCourses } from "../firebase/courseService";
+import { departmentService, type Department } from "../services";
+import type { Department as DeptModel } from "../models/department";
 import { 
   Building2, 
   GraduationCap, 
@@ -25,77 +18,36 @@ import {
 export default function DepartmentsPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<Record<string, { students: number; teachers: number; courses: number }>>({});
+  const [error, setError] = useState<string | null>null);
 
   useEffect(() => {
     loadDepartments();
   }, []);
 
-  useEffect(() => {
-    if (departments.length > 0) {
-      loadStats();
-    }
-  }, [departments]);
-
   const loadDepartments = async () => {
     try {
       setLoading(true);
-      const data = await getAllDepartments();
+      setError(null);
+      const data = await departmentService.getAll();
       setDepartments(data);
-    } catch (error) {
-      console.error("Error loading departments:", error);
-      alert("Failed to load departments");
+    } catch (err: any) {
+      console.error("Error loading departments:", err);
+      setError(err.message || "Failed to load departments");
     } finally {
       setLoading(false);
     }
   };
 
-  const loadStats = async () => {
-    try {
-      const [students, teachers, courses] = await Promise.all([
-        getAllStudents(),
-        getAllTeachers(),
-        getAllCourses(),
-      ]);
-
-      const statsMap: Record<string, { students: number; teachers: number; courses: number }> = {};
-      
-      departments.forEach(dept => {
-        statsMap[dept.code] = {
-          students: students.filter(s => s.departmentCode === dept.code).length,
-          teachers: teachers.filter(t => t.departmentCode === dept.code).length,
-          courses: courses.filter(c => c.departmentCode === dept.code).length,
-        };
-      });
-
-      setStats(statsMap);
-    } catch (error) {
-      console.error("Error loading stats:", error);
-    }
-  };
-
-  const handleDeleteDepartment = async (code: string) => {
-    if (!confirm(`Are you sure you want to delete department ${code}?`)) return;
+  const handleDeleteDepartment = async (id: number, name: string) => {
+    if (!confirm(`Are you sure you want to delete ${name}? This cannot be undone.`)) return;
 
     try {
-      await deleteDepartment(code);
+      await departmentService.delete(id);
+      setDepartments(departments.filter(dept => dept.id !== id));
       alert("Department deleted successfully!");
-      loadDepartments();
-      loadStats();
-    } catch (error) {
-      console.error("Error deleting department:", error);
-      alert("Failed to delete department");
-    }
-  };
-
-  const handleToggleStatus = async (code: string) => {
-    try {
-      await toggleDepartmentStatus(code);
-      alert("Department status updated!");
-      loadDepartments();
-    } catch (error) {
-      console.error("Error toggling status:", error);
-      alert("Failed to update status");
+    } catch (err: any) {
+      console.error("Error deleting department:", err);
+      alert(err.message || "Failed to delete department. It may have associated courses, teachers, or students.");
     }
   };
 
@@ -152,21 +104,21 @@ export default function DepartmentsPage() {
           <div style={{ ...statBoxStyle, background: 'white' }}>
             <GraduationCap size={24} color="#059669" style={{ margin: '0 auto 8px' }} />
             <p style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: '#059669' }}>
-              {Object.values(stats).reduce((sum, s) => sum + s.students, 0)}
+              {departments.reduce((sum, d) => sum + (d.students_count || 0), 0)}
             </p>
             <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6b7280' }}>Total Students</p>
           </div>
           <div style={{ ...statBoxStyle, background: 'white' }}>
             <Users size={24} color="#0284c7" style={{ margin: '0 auto 8px' }} />
             <p style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: '#0284c7' }}>
-              {Object.values(stats).reduce((sum, s) => sum + s.teachers, 0)}
+              {departments.reduce((sum, d) => sum + (d.teachers_count || 0), 0)}
             </p>
             <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6b7280' }}>Total Faculty</p>
           </div>
           <div style={{ ...statBoxStyle, background: 'white' }}>
             <BookOpen size={24} color="#7c3aed" style={{ margin: '0 auto 8px' }} />
             <p style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: '#7c3aed' }}>
-              {Object.values(stats).reduce((sum, s) => sum + s.courses, 0)}
+              {departments.reduce((sum, d) => sum + (d.courses_count || 0), 0)}
             </p>
             <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6b7280' }}>Total Courses</p>
           </div>
@@ -189,7 +141,7 @@ export default function DepartmentsPage() {
               </div>
             ) : (
               departments.map((dept) => (
-                <div key={dept.code} style={deptCardStyle}>
+                <div key={dept.id} style={deptCardStyle}>
                   {/* Header Row */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -233,7 +185,7 @@ export default function DepartmentsPage() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                         <GraduationCap size={18} color="#059669" />
                         <span style={{ fontSize: '24px', fontWeight: '700', color: '#059669' }}>
-                          {stats[dept.code]?.students || 0}
+                          {dept.students_count || 0}
                         </span>
                       </div>
                       <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6b7280' }}>Students</p>
@@ -242,7 +194,7 @@ export default function DepartmentsPage() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                         <Users size={18} color="#0284c7" />
                         <span style={{ fontSize: '24px', fontWeight: '700', color: '#0284c7' }}>
-                          {stats[dept.code]?.teachers || 0}
+                          {dept.teachers_count || 0}
                         </span>
                       </div>
                       <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6b7280' }}>Faculty</p>
@@ -251,7 +203,7 @@ export default function DepartmentsPage() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                         <BookOpen size={18} color="#7c3aed" />
                         <span style={{ fontSize: '24px', fontWeight: '700', color: '#7c3aed' }}>
-                          {stats[dept.code]?.courses || 0}
+                          {dept.courses_count || 0}
                         </span>
                       </div>
                       <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6b7280' }}>Courses</p>
@@ -261,17 +213,9 @@ export default function DepartmentsPage() {
                   {/* Actions Row */}
                   <div style={{ display: 'flex', gap: '12px' }}>
                     <Button 
-                      variant="secondary" 
-                      size="sm" 
-                      onClick={() => handleToggleStatus(dept.code)}
-                    >
-                      <Power size={14} />
-                      {dept.isActive ? "Deactivate" : "Activate"}
-                    </Button>
-                    <Button 
                       variant="danger" 
                       size="sm" 
-                      onClick={() => handleDeleteDepartment(dept.code)}
+                      onClick={() => handleDeleteDepartment(dept.id, dept.name)}
                     >
                       <Trash2 size={14} />
                       Delete

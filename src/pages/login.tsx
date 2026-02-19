@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { loginUser, registerUser } from "../firebase/authService";
+import { useAuth } from "../context/AuthContext";
 import { 
   GraduationCap, 
   Mail, 
@@ -18,27 +18,14 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleCreateAdmin = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      setSuccess("");
-      await registerUser("admin@school.com", "admin123", "admin", "");
-      setSuccess("Admin created! Email: admin@school.com, Password: admin123");
-      setEmail("admin@school.com");
-      setPassword("admin123");
-    } catch (err: any) {
-      if (err.code === "auth/email-already-in-use") {
-        setSuccess("Admin already exists! Email: admin@school.com, Password: admin123");
-        setEmail("admin@school.com");
-        setPassword("admin123");
-      } else {
-        setError(err.message || "Failed to create admin");
-      }
-    } finally {
-      setLoading(false);
-    }
+  const handleCreateAdmin = () => {
+    setSuccess("Use seeded accounts from Rails backend!");
+    setError("");
+    // You can set demo credentials here
+    setEmail("admin@gmail.com");
+    setPassword("12345678");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,7 +40,10 @@ export default function LoginPage() {
 
     try {
       setLoading(true);
-      const userData = await loginUser(email, password);
+      await login({ email, password });
+      
+      // Get the current user from auth context
+      const userData = JSON.parse(localStorage.getItem('currentUser') || '{}');
       
       // Redirect based on role
       if (userData.role === "admin") {
@@ -65,13 +55,7 @@ export default function LoginPage() {
       }
     } catch (err: any) {
       console.error("Login error:", err);
-      if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
-        setError("Invalid email or password");
-      } else if (err.code === "auth/invalid-email") {
-        setError("Invalid email format");
-      } else {
-        setError(err.message || "Failed to login");
-      }
+      setError(err.message || "Failed to login. Please check your credentials.");
     } finally {
       setLoading(false);
     }

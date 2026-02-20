@@ -11,12 +11,7 @@ import {
   Plus,
   X,
 } from "lucide-react";
-import {
-  getAllDepartments,
-  createDepartment,
-  deleteDepartment,
-} from "../../firebase";
-import type { Department } from "../../models/department";
+import { departmentService, type Department } from "../../services/department.service";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -38,7 +33,7 @@ export default function AdminDepartmentsPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const deptsData = await getAllDepartments();
+      const deptsData = await departmentService.getAll();
       setDepartments(deptsData);
     } catch (error) {
       console.error("Error loading data:", error);
@@ -52,7 +47,7 @@ export default function AdminDepartmentsPage() {
     const query = searchQuery.toLowerCase();
     return departments.filter(d =>
       d.name.toLowerCase().includes(query) ||
-      d.code.toLowerCase().includes(query)
+      d.id.toString().includes(query)
     );
   };
 
@@ -65,10 +60,9 @@ export default function AdminDepartmentsPage() {
 
   const handleCreateDepartment = async (data: any) => {
     try {
-      await createDepartment({
-        code: data.code,
+      await departmentService.create({
         name: data.name,
-        isActive: true,
+        code: data.code,
       });
       setShowAddModal(false);
       loadData();
@@ -77,13 +71,13 @@ export default function AdminDepartmentsPage() {
     }
   };
 
-  const handleDeleteDepartment = async (code: string) => {
+  const handleDeleteDepartment = async (id: number) => {
     if (!confirm("Delete this department? This will affect associated courses and users.")) return;
     try {
-      await deleteDepartment(code);
+      await departmentService.delete(id);
       loadData();
-    } catch (error) {
-      alert("Failed to delete department");
+    } catch (error: any) {
+      alert(error.message || "Failed to delete department");
     }
   };
 
@@ -145,20 +139,22 @@ export default function AdminDepartmentsPage() {
               <table style={tableStyle}>
                 <thead>
                   <tr>
-                    <th style={thStyle}>Code</th>
+                    <th style={thStyle}>ID</th>
                     <th style={thStyle}>Department Name</th>
-                    <th style={{ ...thStyle, textAlign: 'center' }}>Status</th>
+                    <th style={{ ...thStyle, textAlign: 'center' }}>Students</th>
+                    <th style={{ ...thStyle, textAlign: 'center' }}>Teachers</th>
                     <th style={{ ...thStyle, textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginate(filtered).map((dept) => (
-                    <tr key={dept.code}>
-                      <td style={tdStyle}><span style={{ fontWeight: '600', color: '#4f46e5' }}>{dept.code}</span></td>
+                    <tr key={dept.id}>
+                      <td style={tdStyle}><span style={{ fontWeight: '600', color: '#4f46e5' }}>{dept.id}</span></td>
                       <td style={tdStyle}><span style={{ fontWeight: '500', color: '#111827' }}>{dept.name}</span></td>
-                      <td style={{ ...tdStyle, textAlign: 'center' }}><span style={badgeStyle(dept.isActive)}>{dept.isActive ? 'Active' : 'Inactive'}</span></td>
+                      <td style={{ ...tdStyle, textAlign: 'center' }}><span style={badgeStyle(true)}>{dept.students_count || 0}</span></td>
+                      <td style={{ ...tdStyle, textAlign: 'center' }}><span style={badgeStyle(true)}>{dept.teachers_count || 0}</span></td>
                       <td style={{ ...tdStyle, textAlign: 'right' }}>
-                        <Button variant="danger" size="sm" onClick={() => handleDeleteDepartment(dept.code)}><Trash2 size={14} /></Button>
+                        <Button variant="danger" size="sm" onClick={() => handleDeleteDepartment(dept.id)}><Trash2 size={14} /></Button>
                       </td>
                     </tr>
                   ))}

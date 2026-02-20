@@ -1,348 +1,619 @@
 import { useState, useEffect } from "react";
-import { Button } from "../../components/button";
+import { enrollmentService, type Enrollment } from "../../services/enrollment.service";
+import { studentService, type Student } from "../../services/student.service";
+import { courseService, type Course } from "../../services/course.service";
 import {
   ClipboardList,
   Loader2,
   Search,
-  ChevronLeft,
-  ChevronRight,
-  Check,
-  X,
-  Clock,
   CheckCircle,
   XCircle,
+  Clock,
   Plus,
-  Trash2,
+  Award,
+  Ban
 } from "lucide-react";
-import {
-  getAllEnrollments,
-  updateEnrollmentStatus,
-  getAllStudents,
-  getAllCourses,
-  createEnrollment,
-  cleanupDuplicateEnrollments,
-} from "../../firebase";
-import type { Enrollment } from "../../models/enrollment";
-import type { Student } from "../../models/student";
-import type { Course } from "../../models/course";
-
-const ITEMS_PER_PAGE = 10;
-
-type EnrollmentWithId = Enrollment & { id: string };
 
 export default function AdminEnrollmentsPage() {
-  const [enrollments, setEnrollments] = useState<EnrollmentWithId[]>([]);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "approved" | "rejected" | "completed">("all");
+  const [activeTab, setActiveTab] = useState<"pending" | "approved">("pending");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedStudentId, setSelectedStudentId] = useState("");
-  const [selectedCourseCode, setSelectedCourseCode] = useState("");
+  const [selectedStudent, setSelectedStudent] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [studentSearch, setStudentSearch] = useState("");
+  const [courseSearch, setCourseSearch] = useState("");
 
   useEffect(() => {
     loadData();
   }, []);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, statusFilter]);
-
   const loadData = async () => {
     try {
       setLoading(true);
       const [enrollmentsData, studentsData, coursesData] = await Promise.all([
-        getAllEnrollments(),
-        getAllStudents(),
-        getAllCourses(),
+        enrollmentService.getAll(),
+        studentService.getAll(),
+        courseService.getAll(),
       ]);
       setEnrollments(enrollmentsData);
       setStudents(studentsData);
       setCourses(coursesData);
     } catch (error) {
       console.error("Error loading data:", error);
+      alert("Failed to load data");
     } finally {
       setLoading(false);
     }
   };
 
-  const filterEnrollments = () => {
-    let filtered = enrollments;
+  const pendingEnrollments = enrollments.filter(e => e.status === 'pending');
+  const approvedEnrollments = enrollments.filter(e => ['approved', 'completed', 'dropped', 'withdrawn', 'rejected'].includes(e.status));
 
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(e => e.status === statusFilter);
-    }
-
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(e => {
-        const student = students.find(s => s.studentId === e.studentId);
-        const course = courses.find(c => c.code === e.courseCode);
-        return (
-          e.studentId.toLowerCase().includes(query) ||
-          e.courseCode.toLowerCase().includes(query) ||
-          student?.name.toLowerCase().includes(query) ||
-          course?.title.toLowerCase().includes(query)
-        );
-      });
-    }
-
-    return filtered;
+  const filterEnrollments = (list: Enrollment[]) => {
+    if (!searchQuery) return list;
+    const query = searchQuery.toLowerCase();
+    return list.filter(e => {
+      return (
+        e.id.toString().includes(query) ||
+        e.student?.user?.email?.toLowerCase().includes(query) ||
+        e.student?.user?.name?.toLowerCase().includes(query) ||
+        e.course?.title?.toLowerCase().includes(query)
+      );
+    });
   };
 
-  const paginate = <T,>(items: T[]): T[] => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return items.slice(start, start + ITEMS_PER_PAGE);
-  };
-
-  const getTotalPages = (total: number) => Math.ceil(total / ITEMS_PER_PAGE);
-  const getStudentName = (studentId: string) => students.find(s => s.studentId === studentId)?.name || studentId;
-  const getCourseName = (courseCode: string) => courses.find(c => c.code === courseCode)?.title || courseCode;
-
-  const handleUpdateStatus = async (enrollment: EnrollmentWithId, status: "approved" | "rejected") => {
+  const handleApprove = async (id: number) => {
     try {
-      await updateEnrollmentStatus(enrollment.studentId, enrollment.courseCode, status);
+      await enrollmentService.approve(id);
+      alert("Enrollment approved!");
       loadData();
-    } catch (error) {
-      alert("Failed to update enrollment status");
+    } catch (error: any) {
+      alert(error.message || "Failed to approve enrollment");
     }
   };
 
-  const handleAddEnrollment = async () => {
-    if (!selectedStudentId || !selectedCourseCode) {
-      alert("Please select both a student and a course");
+  const handleReject = async (id: number) => {
+    if (!confirm("Are you sure you want to reject this enrollment request?")) return;
+    try {
+      await enrollmentService.reject(id);
+      alert("Enrollment rejected");
+      loadData();
+    } catch (error: any) {
+      alert(error.message || "Failed to reject enrollment");
+    }
+  };
+
+  const handleComplete = async (id: number) => {
+    try {
+      await enrollmentService.complete(id);
+      alert("Enrollment marked as completed!");
+      loadData();
+    } catch (error: any) {
+      alert(error.message || "Failed to complete enrollment");
+    }
+  };
+
+  const handleDrop = async (id: number) => {
+    if (!confirm("Are you sure you want to drop this student from the course?")) return;
+    try {
+      await enrollmentService.drop(id);
+      alert("Student dropped from course");
+      loadData();
+    } catch (error: any) {
+      alert(error.message || "Failed to drop enrollment");
+    }
+  };
+
+
+
+  const handleCreateEnrollment = async () => {
+    if (!selectedStudent || !selectedCourse) {
+      alert("Please select both student and course");
       return;
     }
+
     try {
-      await createEnrollment({
-        studentId: selectedStudentId,
-        courseCode: selectedCourseCode,
-        status: "approved",
+      await enrollmentService.create({
+        student_id: parseInt(selectedStudent),
+        course_id: parseInt(selectedCourse),
+        status: 'approved' // Admin creates approved enrollments
       });
+      alert("Enrollment created successfully!");
       setShowAddModal(false);
-      setSelectedStudentId("");
-      setSelectedCourseCode("");
+      setSelectedStudent("");
+      setSelectedCourse("");
+      setStudentSearch("");
+      setCourseSearch("");
       loadData();
     } catch (error: any) {
       alert(error.message || "Failed to create enrollment");
     }
   };
 
-  const handleCleanupDuplicates = async () => {
-    if (!confirm("This will remove duplicate enrollments. Continue?")) return;
-    try {
-      const deletedCount = await cleanupDuplicateEnrollments();
-      alert(`Cleanup complete! Removed ${deletedCount} duplicate enrollments.`);
-      loadData();
-    } catch (error) {
-      alert("Failed to cleanup duplicates");
+  // Filter students based on search
+  const filteredStudents = students.filter(s => {
+    if (!studentSearch) return true;
+    const search = studentSearch.toLowerCase();
+    return (
+      s.user?.name?.toLowerCase().includes(search) ||
+      s.user?.email?.toLowerCase().includes(search) ||
+      s.id.toString().includes(search)
+    );
+  });
+
+  // Filter courses: only show courses the selected student is NOT enrolled in
+  const availableCourses = courses.filter(c => {
+    if (!selectedStudent) return false;
+    
+    // Check if student is already enrolled in this course
+    const isEnrolled = enrollments.some(
+      e => e.student_id === parseInt(selectedStudent) && 
+           e.course_id === c.id &&
+           ['pending', 'approved', 'completed'].includes(e.status)
+    );
+    
+    if (isEnrolled) return false;
+    
+    // Apply search filter
+    if (courseSearch) {
+      const search = courseSearch.toLowerCase();
+      return (
+        c.title?.toLowerCase().includes(search) ||
+        c.id.toString().includes(search) ||
+        c.department?.name?.toLowerCase().includes(search)
+      );
+    }
+    
+    return true;
+  });
+
+  const getStatusStyle = (status: string): React.CSSProperties => {
+    const baseStyle: React.CSSProperties = {
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '4px',
+      padding: '4px 10px',
+      borderRadius: '6px',
+      fontSize: '12px',
+      fontWeight: '500'
+    };
+
+    switch (status) {
+      case 'pending':
+        return { ...baseStyle, background: '#fef3c7', color: '#92400e' };
+      case 'approved':
+        return { ...baseStyle, background: '#dbeafe', color: '#1e40af' };
+      case 'rejected':
+        return { ...baseStyle, background: '#fee2e2', color: '#991b1b' };
+      case 'completed':
+        return { ...baseStyle, background: '#dcfce7', color: '#15803d' };
+      case 'dropped':
+        return { ...baseStyle, background: '#f3f4f6', color: '#374151' };
+      case 'withdrawn':
+        return { ...baseStyle, background: '#fce7f3', color: '#9f1239' };
+      default:
+        return { ...baseStyle, background: '#f3f4f6', color: '#374151' };
     }
   };
 
-  const filtered = filterEnrollments();
-  const totalPages = getTotalPages(filtered.length);
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'pending': return <Clock size={14} />;
+      case 'approved': return <CheckCircle size={14} />;
+      case 'rejected': return <XCircle size={14} />;
+      case 'completed': return <Award size={14} />;
+      case 'dropped': return <Ban size={14} />;
+      case 'withdrawn': return <XCircle size={14} />;
+      default: return null;
+    }
+  };
 
-  const containerStyle: React.CSSProperties = { minHeight: '100vh', background: '#f3f4f6' };
-  const contentStyle: React.CSSProperties = { padding: '24px 32px' };
-  const headerStyle: React.CSSProperties = { marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' };
-  const searchBoxStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: 'white', border: '1px solid #e5e7eb', borderRadius: '10px', flex: 1, maxWidth: '400px' };
-  const tableContainerStyle: React.CSSProperties = { background: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', overflow: 'hidden' };
+  // Inline styles
+  const containerStyle: React.CSSProperties = { minHeight: '100vh', background: '#f3f4f6', padding: '24px' };
+  const cardStyle: React.CSSProperties = { background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '20px', marginBottom: '20px' };
+  const tabStyle = (active: boolean): React.CSSProperties => ({
+    padding: '12px 24px',
+    border: 'none',
+    background: active ? '#3b82f6' : '#e5e7eb',
+    color: active ? 'white' : '#6b7280',
+    fontWeight: '600',
+    cursor: 'pointer',
+    borderRadius: '8px',
+    fontSize: '14px',
+    transition: 'all 0.2s'
+  });
+  const searchBoxStyle: React.CSSProperties = { position: 'relative', flex: '1', minWidth: '250px' };
+  const inputStyle: React.CSSProperties = { width: '100%', padding: '10px 10px 10px 40px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '14px' };
+  const tableContainerStyle: React.CSSProperties = { background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' };
   const tableStyle: React.CSSProperties = { width: '100%', borderCollapse: 'collapse' };
   const thStyle: React.CSSProperties = { padding: '14px 20px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' };
   const tdStyle: React.CSSProperties = { padding: '16px 20px', fontSize: '14px', color: '#374151', borderBottom: '1px solid #f3f4f6' };
-  const filterBtnStyle = (active: boolean): React.CSSProperties => ({
-    padding: '8px 16px',
-    border: '1px solid',
-    borderColor: active ? '#4f46e5' : '#e5e7eb',
-    borderRadius: '8px',
-    background: active ? '#4f46e5' : 'white',
-    color: active ? 'white' : '#374151',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '500',
-  });
+  const buttonStyle: React.CSSProperties = { padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer', border: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' };
+  const modalStyle: React.CSSProperties = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 };
+  const modalContentStyle: React.CSSProperties = { background: 'white', borderRadius: '12px', padding: '24px', width: '90%', maxWidth: '500px' };
 
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, React.CSSProperties> = {
-      pending: { background: '#fef3c7', color: '#d97706' },
-      approved: { background: '#ecfdf5', color: '#059669' },
-      rejected: { background: '#fef2f2', color: '#dc2626' },
-      completed: { background: '#e0e7ff', color: '#4f46e5' },
-    };
-    const icons: Record<string, React.ReactNode> = {
-      pending: <Clock size={12} />,
-      approved: <CheckCircle size={12} />,
-      rejected: <XCircle size={12} />,
-      completed: <Check size={12} />,
-    };
+  const filteredPending = filterEnrollments(pendingEnrollments);
+  const filteredApproved = filterEnrollments(approvedEnrollments);
+
+  if (loading) {
     return (
-      <span style={{ ...styles[status], padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '500', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-        {icons[status]} {status.charAt(0).toUpperCase() + status.slice(1)}
-      </span>
+      <div style={containerStyle}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh' }}>
+          <div style={{ textAlign: 'center' }}>
+            <Loader2 size={40} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 16px', color: '#3b82f6' }} />
+            <p style={{ color: '#6b7280', margin: 0 }}>Loading enrollments...</p>
+          </div>
+        </div>
+      </div>
     );
-  };
-
-  const pendingCount = enrollments.filter(e => e.status === "pending").length;
+  }
 
   return (
     <div style={containerStyle}>
-      <div style={contentStyle}>
-        <div style={headerStyle}>
-          <div>
-            <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#111827', margin: 0 }}>Enrollments</h1>
-            <p style={{ color: '#6b7280', fontSize: '14px', margin: '4px 0 0' }}>
-              Manage course enrollment requests
-              {pendingCount > 0 && <span style={{ marginLeft: '8px', background: '#fef3c7', color: '#d97706', padding: '2px 8px', borderRadius: '10px', fontSize: '12px' }}>{pendingCount} pending</span>}
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <div style={searchBoxStyle}>
-              <Search size={18} color="#9ca3af" />
-              <input type="text" placeholder="Search by student or course..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ flex: 1, border: 'none', outline: 'none', fontSize: '14px', color: '#374151', background: 'transparent' }} />
+      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+        {/* Header */}
+        <div style={cardStyle}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+            <div>
+              <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#111827', margin: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <ClipboardList size={32} color="#3b82f6" />
+                Enrollment Manager
+              </h1>
+              <p style={{ color: '#6b7280', fontSize: '14px', margin: '8px 0 0' }}>
+                {pendingEnrollments.length} pending • {approvedEnrollments.length} processed
+              </p>
             </div>
-            <Button variant="danger" onClick={handleCleanupDuplicates}>
-              <Trash2 size={18} /> Cleanup Duplicates
-            </Button>
-            <Button variant="primary" onClick={() => setShowAddModal(true)}>
-              <Plus size={18} /> Add Enrollment
-            </Button>
+            <button
+              onClick={() => setShowAddModal(true)}
+              style={{ ...buttonStyle, background: '#3b82f6', color: 'white', padding: '10px 20px' }}
+            >
+              <Plus size={16} />
+              Create Enrollment
+            </button>
           </div>
         </div>
 
-        {/* Add Enrollment Modal */}
-        {showAddModal && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-            <div style={{ background: 'white', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '450px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#111827', margin: 0 }}>Add Enrollment</h2>
-                <button onClick={() => { setShowAddModal(false); setSelectedStudentId(""); setSelectedCourseCode(""); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
-                  <X size={20} color="#6b7280" />
-                </button>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px' }}>Student</label>
-                  <select
-                    value={selectedStudentId}
-                    onChange={(e) => setSelectedStudentId(e.target.value)}
-                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '14px', color: '#374151', background: 'white' }}
-                  >
-                    <option value="">Select a student</option>
-                    {students.map(s => (
-                      <option key={s.studentId} value={s.studentId}>{s.name} ({s.studentId})</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px' }}>Course</label>
-                  <select
-                    value={selectedCourseCode}
-                    onChange={(e) => setSelectedCourseCode(e.target.value)}
-                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '14px', color: '#374151', background: 'white' }}
-                  >
-                    <option value="">Select a course</option>
-                    {courses.map(c => (
-                      <option key={c.code} value={c.code}>{c.title} ({c.code}) - {c.creditHours} CH</option>
-                    ))}
-                  </select>
-                </div>
-                <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-                  <Button variant="secondary" onClick={() => { setShowAddModal(false); setSelectedStudentId(""); setSelectedCourseCode(""); }} style={{ flex: 1 }}>
-                    Cancel
-                  </Button>
-                  <Button variant="primary" onClick={handleAddEnrollment} style={{ flex: 1 }}>
-                    <Check size={16} /> Add & Approve
-                  </Button>
-                </div>
-              </div>
-            </div>
+        {/* Tabs and Search */}
+        <div style={cardStyle}>
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+            <button onClick={() => setActiveTab("pending")} style={tabStyle(activeTab === "pending")}>
+              Pending Requests ({pendingEnrollments.length})
+            </button>
+            <button onClick={() => setActiveTab("approved")} style={tabStyle(activeTab === "approved")}>
+              All Enrollments ({approvedEnrollments.length})
+            </button>
           </div>
-        )}
 
-        {/* Filter Buttons */}
-        <div style={{ marginBottom: '16px', display: 'flex', gap: '8px' }}>
-          <button style={filterBtnStyle(statusFilter === "all")} onClick={() => setStatusFilter("all")}>All</button>
-          <button style={filterBtnStyle(statusFilter === "pending")} onClick={() => setStatusFilter("pending")}>Pending</button>
-          <button style={filterBtnStyle(statusFilter === "approved")} onClick={() => setStatusFilter("approved")}>Approved</button>
-          <button style={filterBtnStyle(statusFilter === "rejected")} onClick={() => setStatusFilter("rejected")}>Rejected</button>
-          <button style={filterBtnStyle(statusFilter === "completed")} onClick={() => setStatusFilter("completed")}>Completed</button>
+          <div style={searchBoxStyle}>
+            <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={18} />
+            <input
+              type="text"
+              placeholder="Search by student, course, or ID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={inputStyle}
+            />
+          </div>
         </div>
 
-        <div style={tableContainerStyle}>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '60px', color: '#6b7280' }}>
-              <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 8px' }} />
-              <p>Loading...</p>
-            </div>
-          ) : filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px', color: '#6b7280' }}>
-              <ClipboardList size={40} style={{ margin: '0 auto 8px', opacity: 0.5 }} />
-              <p>{searchQuery || statusFilter !== "all" ? "No enrollments match your criteria" : "No enrollment requests yet"}</p>
-            </div>
-          ) : (
-            <>
+        {/* Pending Requests Table */}
+        {activeTab === "pending" && (
+          <div style={tableContainerStyle}>
+            {filteredPending.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: '#6b7280' }}>
+                <Clock size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
+                <p style={{ fontSize: '16px', fontWeight: '500', margin: '0 0 8px' }}>No pending requests</p>
+                <p style={{ fontSize: '14px', margin: 0 }}>Students haven't submitted any enrollment requests yet</p>
+              </div>
+            ) : (
               <table style={tableStyle}>
                 <thead>
                   <tr>
+                    <th style={thStyle}>ID</th>
                     <th style={thStyle}>Student</th>
                     <th style={thStyle}>Course</th>
-                    <th style={{ ...thStyle, textAlign: 'center' }}>Status</th>
-                    <th style={{ ...thStyle, textAlign: 'right' }}>Actions</th>
+                    <th style={thStyle}>Status</th>
+                    <th style={thStyle}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginate(filtered).map((enrollment) => (
+                  {filteredPending.map((enrollment) => (
                     <tr key={enrollment.id}>
                       <td style={tdStyle}>
+                        <span style={{ fontWeight: '600', color: '#3b82f6' }}>{enrollment.id}</span>
+                      </td>
+                      <td style={tdStyle}>
                         <div>
-                          <span style={{ fontWeight: '500', color: '#111827', display: 'block' }}>{getStudentName(enrollment.studentId)}</span>
-                          <span style={{ fontSize: '12px', color: '#6b7280' }}>{enrollment.studentId}</span>
+                          <div style={{ fontWeight: '500', color: '#111827' }}>
+                            {enrollment.student?.user?.name || enrollment.student?.user?.email || `Student #${enrollment.student_id}`}
+                          </div>
+                          <p style={{ fontSize: '12px', color: '#6b7280', margin: '4px 0 0' }}>
+                            {enrollment.student?.department?.name || 'N/A'}
+                          </p>
                         </div>
                       </td>
                       <td style={tdStyle}>
                         <div>
-                          <span style={{ fontWeight: '500', color: '#111827', display: 'block' }}>{getCourseName(enrollment.courseCode)}</span>
-                          <span style={{ fontSize: '12px', color: '#4f46e5' }}>{enrollment.courseCode}</span>
+                          <div style={{ fontWeight: '500', color: '#111827' }}>
+                            {enrollment.course?.title || `Course #${enrollment.course_id}`}
+                          </div>
+                          <p style={{ fontSize: '12px', color: '#6b7280', margin: '4px 0 0' }}>
+                            {enrollment.course?.credit_hours} credit hours
+                          </p>
                         </div>
                       </td>
-                      <td style={{ ...tdStyle, textAlign: 'center' }}>{getStatusBadge(enrollment.status)}</td>
-                      <td style={{ ...tdStyle, textAlign: 'right' }}>
-                        {enrollment.status === "pending" && (
-                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                            <Button variant="primary" size="sm" onClick={() => handleUpdateStatus(enrollment, "approved")}>
-                              <Check size={14} /> Approve
-                            </Button>
-                            <Button variant="danger" size="sm" onClick={() => handleUpdateStatus(enrollment, "rejected")}>
-                              <X size={14} /> Reject
-                            </Button>
-                          </div>
-                        )}
+                      <td style={tdStyle}>
+                        <span style={getStatusStyle(enrollment.status)}>
+                          {getStatusIcon(enrollment.status)}
+                          {enrollment.status}
+                        </span>
+                      </td>
+                      <td style={tdStyle}>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            onClick={() => handleApprove(enrollment.id)}
+                            style={{ ...buttonStyle, background: '#dcfce7', color: '#15803d' }}
+                            title="Approve enrollment"
+                          >
+                            <CheckCircle size={14} />
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => handleReject(enrollment.id)}
+                            style={{ ...buttonStyle, background: '#fee2e2', color: '#991b1b' }}
+                            title="Reject request"
+                          >
+                            <XCircle size={14} />
+                            Reject
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              {filtered.length > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderTop: '1px solid #e5e7eb', background: '#fafafa' }}>
-                  <span style={{ fontSize: '13px', color: '#6b7280' }}>
-                    {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, filtered.length)}-{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
-                  </span>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} style={{ padding: '8px 12px', border: '1px solid #e5e7eb', borderRadius: '8px', background: currentPage === 1 ? '#f3f4f6' : 'white', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', color: '#374151' }}>
-                      <ChevronLeft size={16} />
-                    </button>
-                    <span style={{ fontSize: '13px', color: '#374151', padding: '0 8px' }}>Page {currentPage} / {totalPages || 1}</span>
-                    <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage >= totalPages} style={{ padding: '8px 12px', border: '1px solid #e5e7eb', borderRadius: '8px', background: currentPage >= totalPages ? '#f3f4f6' : 'white', cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', color: '#374151' }}>
-                      <ChevronRight size={16} />
-                    </button>
-                  </div>
+            )}
+          </div>
+        )}
+
+        {/* Approved/All Enrollments Table */}
+        {activeTab === "approved" && (
+          <div style={tableContainerStyle}>
+            {filteredApproved.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: '#6b7280' }}>
+                <ClipboardList size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
+                <p style={{ fontSize: '16px', fontWeight: '500', margin: '0 0 8px' }}>No enrollments found</p>
+              </div>
+            ) : (
+              <table style={tableStyle}>
+                <thead>
+                  <tr>
+                    <th style={thStyle}>ID</th>
+                    <th style={thStyle}>Student</th>
+                    <th style={thStyle}>Course</th>
+                    <th style={thStyle}>Status</th>
+                    <th style={thStyle}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredApproved.map((enrollment) => (
+                    <tr key={enrollment.id}>
+                      <td style={tdStyle}>
+                        <span style={{ fontWeight: '600', color: '#3b82f6' }}>#{enrollment.id}</span>
+                      </td>
+                      <td style={tdStyle}>
+                        <div>
+                          <div style={{ fontWeight: '500', color: '#111827' }}>
+                            {enrollment.student?.user?.name || enrollment.student?.user?.email || `Student #${enrollment.student_id}`}
+                          </div>
+                          <p style={{ fontSize: '12px', color: '#6b7280', margin: '4px 0 0' }}>
+                            {enrollment.student?.department?.name || 'N/A'}
+                          </p>
+                        </div>
+                      </td>
+                      <td style={tdStyle}>
+                        <div>
+                          <div style={{ fontWeight: '500', color: '#111827' }}>
+                            {enrollment.course?.title || `Course #${enrollment.course_id}`}
+                          </div>
+                          <p style={{ fontSize: '12px', color: '#6b7280', margin: '4px 0 0' }}>
+                            {enrollment.course?.credit_hours} credit hours
+                          </p>
+                        </div>
+                      </td>
+                      <td style={tdStyle}>
+                        <span style={getStatusStyle(enrollment.status)}>
+                          {getStatusIcon(enrollment.status)}
+                          {enrollment.status}
+                        </span>
+                      </td>
+                      <td style={tdStyle}>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          {enrollment.status === 'approved' && (
+                            <>
+                              <button
+                                onClick={() => handleComplete(enrollment.id)}
+                                style={{ ...buttonStyle, background: '#dcfce7', color: '#15803d' }}
+                                title="Mark as completed"
+                              >
+                                <Award size={14} />
+                              </button>
+                              <button
+                                onClick={() => handleDrop(enrollment.id)}
+                                style={{ ...buttonStyle, background: '#f3f4f6', color: '#374151' }}
+                                title="Drop student"
+                              >
+                                <Ban size={14} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
+        {/* Create Enrollment Modal */}
+        {showAddModal && (
+          <div style={modalStyle} onClick={() => setShowAddModal(false)}>
+            <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
+              <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#111827', margin: '0 0 20px' }}>
+               Create Enrollment
+              </h2>
+              
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                  Student <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Search student by name, email, or ID..."
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                  style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', marginBottom: '8px' }}
+                />
+                <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #e5e7eb', borderRadius: '6px' }}>
+                  {filteredStudents.length === 0 ? (
+                    <div style={{ padding: '20px', textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>
+                      No students found
+                    </div>
+                  ) : (
+                    filteredStudents.slice(0, 50).map(s => (
+                      <div
+                        key={s.id}
+                        onClick={() => {
+                          setSelectedStudent(s.id.toString());
+                          setSelectedCourse(""); // Reset course when student changes
+                        }}
+                        style={{
+                          padding: '12px',
+                          cursor: 'pointer',
+                          background: selectedStudent === s.id.toString() ? '#eff6ff' : 'white',
+                          borderBottom: '1px solid #f3f4f6',
+                          transition: 'all 0.15s'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (selectedStudent !== s.id.toString()) {
+                            e.currentTarget.style.background = '#f9fafb';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (selectedStudent !== s.id.toString()) {
+                            e.currentTarget.style.background = 'white';
+                          }
+                        }}
+                      >
+                        <div style={{ fontWeight: '500', color: '#111827', fontSize: '14px' }}>
+                          {s.user?.name || s.user?.email || `Student #${s.id}`}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
+                          {s.user?.email} • {s.department?.name || 'N/A'} • Semester {s.semester}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
-              )}
-            </>
-          )}
-        </div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                  Course <span style={{ color: '#ef4444' }}>*</span>
+                  {!selectedStudent && <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: 'normal' }}> (Select student first)</span>}
+                </label>
+                {selectedStudent ? (
+                  <>
+                    <input
+                      type="text"
+                      placeholder="Search course by title, department, or ID..."
+                      value={courseSearch}
+                      onChange={(e) => setCourseSearch(e.target.value)}
+                      style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', marginBottom: '8px' }}
+                    />
+                    <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #e5e7eb', borderRadius: '6px' }}>
+                      {availableCourses.length === 0 ? (
+                        <div style={{ padding: '20px', textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>
+                          {courseSearch ? 'No courses found' : 'Student is already enrolled in all available courses'}
+                        </div>
+                      ) : (
+                        availableCourses.slice(0, 50).map(c => (
+                          <div
+                            key={c.id}
+                            onClick={() => setSelectedCourse(c.id.toString())}
+                            style={{
+                              padding: '12px',
+                              cursor: 'pointer',
+                              background: selectedCourse === c.id.toString() ? '#eff6ff' : 'white',
+                              borderBottom: '1px solid #f3f4f6',
+                              transition: 'all 0.15s'
+                            }}
+                            onMouseEnter={(e) => {
+                              if (selectedCourse !== c.id.toString()) {
+                                e.currentTarget.style.background = '#f9fafb';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (selectedCourse !== c.id.toString()) {
+                                e.currentTarget.style.background = 'white';
+                              }
+                            }}
+                          >
+                            <div style={{ fontWeight: '500', color: '#111827', fontSize: '14px' }}>
+                              {c.title}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
+                              {c.department?.name || 'N/A'} • {c.credit_hours} credits • {c.teacher?.user?.name || 'No teacher'}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ padding: '40px 20px', textAlign: 'center', background: '#f9fafb', borderRadius: '6px', border: '1px solid #e5e7eb' }}>
+                    <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>Please select a student first</p>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setSelectedStudent("");
+                    setSelectedCourse("");
+                    setStudentSearch("");
+                    setCourseSearch("");
+                  }}
+                  style={{ ...buttonStyle, background: '#e5e7eb', color: '#374151', padding: '10px 20px' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateEnrollment}
+                  disabled={!selectedStudent || !selectedCourse}
+                  style={{ 
+                    ...buttonStyle, 
+                    background: (!selectedStudent || !selectedCourse) ? '#d1d5db' : '#3b82f6', 
+                    color: 'white', 
+                    padding: '10px 20px',
+                    cursor: (!selectedStudent || !selectedCourse) ? 'not-allowed' : 'pointer',
+                    opacity: (!selectedStudent || !selectedCourse) ? 0.6 : 1
+                  }}
+                >
+                  Create Enrollment
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

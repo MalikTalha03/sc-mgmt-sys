@@ -9,16 +9,14 @@ import {
   Loader2,
   TrendingUp,
   ArrowRight,
-  Clock,
 } from "lucide-react";
 import {
-  getAllStudents,
-  getAllTeachers,
-  getAllCourses,
-  getAllDepartments,
-  getAllEnrollments,
-} from "../../firebase";
-import type { Enrollment } from "../../models/enrollment";
+  studentService,
+  teacherService,
+  courseService,
+  departmentService,
+  enrollmentService,
+} from "../../services";
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState({
@@ -26,7 +24,7 @@ export default function AdminDashboardPage() {
     teachers: 0,
     courses: 0,
     departments: 0,
-    pendingEnrollments: 0,
+    enrollments: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -38,18 +36,18 @@ export default function AdminDashboardPage() {
     try {
       setLoading(true);
       const [students, teachers, courses, departments, enrollments] = await Promise.all([
-        getAllStudents(),
-        getAllTeachers(),
-        getAllCourses(),
-        getAllDepartments(),
-        getAllEnrollments(),
+        studentService.getAll(),
+        teacherService.getAll(),
+        courseService.getAll(),
+        departmentService.getAll(),
+        enrollmentService.getAll(),
       ]);
       setStats({
         students: students.length,
         teachers: teachers.length,
         courses: courses.length,
         departments: departments.length,
-        pendingEnrollments: enrollments.filter((e: Enrollment & { id: string }) => e.status === "pending").length,
+        enrollments: enrollments.length,
       });
     } catch (error) {
       console.error("Error loading stats:", error);
@@ -173,22 +171,18 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {stats.pendingEnrollments > 0 && (
-            <div style={{ ...statCardStyle, background: '#fffbeb', borderColor: '#fcd34d' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                <div>
-                  <p style={{ fontSize: '14px', color: '#92400e', margin: '0 0 8px' }}>Pending Enrollments</p>
-                  <h2 style={{ fontSize: '32px', fontWeight: '700', color: '#92400e', margin: 0 }}>{stats.pendingEnrollments}</h2>
-                </div>
-                <div style={iconBoxStyle('yellow')}><Clock size={24} /></div>
+          <div style={statCardStyle}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              <div>
+                <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 8px' }}>Total Enrollments</p>
+                <h2 style={{ fontSize: '32px', fontWeight: '700', color: '#111827', margin: 0 }}>{stats.enrollments}</h2>
               </div>
-              <div style={{ marginTop: '16px' }}>
-                <Link to="/admin/enrollments" style={{ fontSize: '13px', color: '#d97706', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  Review requests <ArrowRight size={14} />
-                </Link>
-              </div>
+              <div style={iconBoxStyle('yellow')}><ClipboardList size={24} /></div>
             </div>
-          )}
+            <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#6b7280' }}>
+              Student enrollments
+            </div>
+          </div>
         </div>
 
         {/* Quick Links */}

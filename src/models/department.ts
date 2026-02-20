@@ -1,6 +1,6 @@
 export interface Department {
   code: string;
   name: string;
-  isActive: boolean;
+  isActive?: boolean;
   createdAt?: any;
 }

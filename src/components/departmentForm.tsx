@@ -26,8 +26,8 @@ export function DepartmentForm({ onSubmit }: DepartmentFormProps) {
     <Card>
       <CardHeader>Add New Department</CardHeader>
       <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151' }}>
+        <div className="form-input-wrapper">
+          <label className="form-input-label">
             Department Code
           </label>
           <input
@@ -36,18 +36,12 @@ export function DepartmentForm({ onSubmit }: DepartmentFormProps) {
             value={formData.code}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, code: e.target.value })}
             required
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              border: '1px solid #d1d5db',
-              borderRadius: '6px',
-              fontSize: '14px'
-            }}
+            className="form-input-field"
           />
         </div>
 
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151' }}>
+        <div className="form-input-wrapper">
+          <label className="form-input-label">
             Department Name
           </label>
           <input
@@ -56,13 +50,7 @@ export function DepartmentForm({ onSubmit }: DepartmentFormProps) {
             value={formData.name}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, name: e.target.value })}
             required
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              border: '1px solid #d1d5db',
-              borderRadius: '6px',
-              fontSize: '14px'
-            }}
+            className="form-input-field"
           />
         </div>
 

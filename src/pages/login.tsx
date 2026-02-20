@@ -20,14 +20,6 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const handleCreateAdmin = () => {
-    setSuccess("Use seeded accounts from Rails backend!");
-    setError("");
-    // You can set demo credentials here
-    setEmail("admin@gmail.com");
-    setPassword("12345678");
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -300,28 +292,7 @@ export default function LoginPage() {
           }}>
             Need access? Contact your administrator
           </p>
-          <button
-            type="button"
-            onClick={handleCreateAdmin}
-            disabled={loading}
-            style={{
-              padding: '10px 20px',
-              background: '#f3f4f6',
-              color: '#374151',
-              fontSize: '14px',
-              fontWeight: '500',
-              border: '1px solid #e5e7eb',
-              borderRadius: '8px',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.2s'
-            }}
-          >
-            <UserPlus size={16} />
-            Create Demo Admin
-          </button>
+          
         </div>
       </div>
     </div>

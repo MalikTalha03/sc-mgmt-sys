@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Button } from "../../components/button";
-import { CourseForm } from "../../components/courseForm";
 import {
   BookOpen,
   Trash2,
@@ -10,25 +9,31 @@ import {
   ChevronRight,
   Plus,
   X,
+  UserCog,
 } from "lucide-react";
-import {
-  getAllCourses,
-  createCourse,
-  deleteCourse,
-  getAllDepartments,
-} from "../../firebase";
-import type { Course } from "../../models/course";
-import type { Department } from "../../models/department";
+import { courseService, type Course } from "../../services/course.service";
+import { departmentService, type Department } from "../../services/department.service";
+import { teacherService, type Teacher } from "../../services/teacher.service";
 
 const ITEMS_PER_PAGE = 10;
 
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showReassignModal, setShowReassignModal] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedTeacherId, setSelectedTeacherId] = useState("");
+  const [courseFormData, setCourseFormData] = useState({
+    title: "",
+    department_id: "",
+    credit_hours: "3",
+    teacher_id: ""
+  });
 
   useEffect(() => {
     loadData();
@@ -41,12 +46,14 @@ export default function AdminCoursesPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [coursesData, deptsData] = await Promise.all([
-        getAllCourses(),
-        getAllDepartments(),
+      const [coursesData, deptsData, teachersData] = await Promise.all([
+        courseService.getAll(),
+        departmentService.getAll(),
+        teacherService.getAll(),
       ]);
       setCourses(coursesData);
       setDepartments(deptsData);
+      setTeachers(teachersData);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
@@ -59,8 +66,11 @@ export default function AdminCoursesPage() {
     const query = searchQuery.toLowerCase();
     return courses.filter(c =>
       c.title.toLowerCase().includes(query) ||
-      c.code.toLowerCase().includes(query) ||
-      c.departmentCode.toLowerCase().includes(query)
+      c.id.toString().includes(query) ||
+      c.department?.name?.toLowerCase().includes(query) ||
+      c.department?.code?.toLowerCase().includes(query) ||
+      c.teacher?.user?.email?.toLowerCase().includes(query) ||
+      c.teacher?.user?.name?.toLowerCase().includes(query)
     );
   };
 
@@ -71,29 +81,67 @@ export default function AdminCoursesPage() {
 
   const getTotalPages = (total: number) => Math.ceil(total / ITEMS_PER_PAGE);
 
-  const handleCreateCourse = async (data: any) => {
+  const handleCreateCourse = async () => {
+    if (!courseFormData.title || !courseFormData.department_id || !courseFormData.teacher_id) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    const creditHours = parseInt(courseFormData.credit_hours);
+    if (creditHours < 1 || creditHours > 4) {
+      alert("Credit hours must be between 1 and 4");
+      return;
+    }
+
     try {
-      await createCourse({
-        code: data.code,
-        title: data.title,
-        creditHours: parseInt(data.creditHours),
-        departmentCode: data.departmentCode,
-        semester: parseInt(data.semester) || 1,
-      });
+      await courseService.create({
+        title: courseFormData.title,
+        department_id: parseInt(courseFormData.department_id),
+        credit_hours: creditHours,
+        teacher_id: parseInt(courseFormData.teacher_id)
+      } as any);
+      alert("Course created successfully!");
       setShowAddModal(false);
+      setCourseFormData({ title: "", department_id: "", credit_hours: "3", teacher_id: "" });
       loadData();
-    } catch (error) {
-      alert("Failed to create course");
+    } catch (error: any) {
+      alert(error.message || "Failed to create course");
     }
   };
 
-  const handleDeleteCourse = async (courseCode: string) => {
+  const handleDeleteCourse = async (courseId: number) => {
     if (!confirm("Delete this course?")) return;
     try {
-      await deleteCourse(courseCode);
+      await courseService.delete(courseId);
       loadData();
-    } catch (error) {
-      alert("Failed to delete course");
+    } catch (error: any) {
+      alert(error.message || "Failed to delete course");
+    }
+  };
+
+  const handleReassignTeacher = (course: Course) => {
+    setSelectedCourse(course);
+    setSelectedTeacherId(course.teacher_id.toString());
+    setShowReassignModal(true);
+  };
+
+  const handleSubmitReassign = async () => {
+    if (!selectedCourse || !selectedTeacherId) {
+      alert("Please select a teacher");
+      return;
+    }
+
+    try {
+      await courseService.update(selectedCourse.id, {
+        teacher_id: parseInt(selectedTeacherId)
+      });
+      alert("Teacher reassigned successfully!");
+      setShowReassignModal(false);
+      setSelectedCourse(null);
+      setSelectedTeacherId("");
+      loadData();
+    } catch (error: any) {
+      alert(error.message || "Failed to reassign teacher");
     }
   };
 
@@ -155,24 +203,41 @@ export default function AdminCoursesPage() {
               <table style={tableStyle}>
                 <thead>
                   <tr>
-                    <th style={thStyle}>Course Code</th>
+                    <th style={thStyle}>ID</th>
                     <th style={thStyle}>Course Title</th>
                     <th style={thStyle}>Department</th>
                     <th style={{ ...thStyle, textAlign: 'center' }}>Credits</th>
-                    <th style={{ ...thStyle, textAlign: 'center' }}>Semester</th>
+                    <th style={thStyle}>Teacher</th>
                     <th style={{ ...thStyle, textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginate(filtered).map((course) => (
-                    <tr key={course.code}>
-                      <td style={tdStyle}><span style={{ fontWeight: '600', color: '#4f46e5' }}>{course.code}</span></td>
+                    <tr key={course.id}>
+                      <td style={tdStyle}><span style={{ fontWeight: '600', color: '#4f46e5' }}>{course.id}</span></td>
                       <td style={tdStyle}><span style={{ fontWeight: '500', color: '#111827' }}>{course.title}</span></td>
-                      <td style={tdStyle}><span style={badgeStyle('indigo')}>{course.departmentCode}</span></td>
-                      <td style={{ ...tdStyle, textAlign: 'center' }}><span style={badgeStyle('blue')}>{course.creditHours}</span></td>
-                      <td style={{ ...tdStyle, textAlign: 'center' }}>{course.semester}</td>
+                      <td style={tdStyle}>
+                        <div>
+                          <div style={{ fontWeight: '500', color: '#111827' }}>{course.department?.name || `Dept #${course.department_id}`}</div>
+                          <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>{course.department?.code}</div>
+                        </div>
+                      </td>
+                      <td style={{ ...tdStyle, textAlign: 'center' }}><span style={badgeStyle('blue')}>{course.credit_hours}</span></td>
+                      <td style={tdStyle}>
+                        <div>
+                          <div style={{ fontWeight: '500', color: '#111827' }}>{course.teacher?.user?.name || course.teacher?.user?.email || `Teacher #${course.teacher_id}`}</div>
+                          <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>{course.teacher?.user?.email || course.teacher?.department?.name || 'N/A'}</div>
+                        </div>
+                      </td>
                       <td style={{ ...tdStyle, textAlign: 'right' }}>
-                        <Button variant="danger" size="sm" onClick={() => handleDeleteCourse(course.code)}><Trash2 size={14} /></Button>
+                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                          <Button variant="secondary" size="sm" onClick={() => handleReassignTeacher(course)} title="Reassign Teacher">
+                            <UserCog size={14} />
+                          </Button>
+                          <Button variant="danger" size="sm" onClick={() => handleDeleteCourse(course.id)}>
+                            <Trash2 size={14} />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -204,12 +269,137 @@ export default function AdminCoursesPage() {
         <div style={modalOverlayStyle} onClick={() => setShowAddModal(false)}>
           <div style={modalStyle} onClick={e => e.stopPropagation()}>
             <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#111827' }}>Add Course</h2>
+              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#111827' }}>Add New Course</h2>
               <button onClick={() => setShowAddModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
                 <X size={20} color="#6b7280" />
               </button>
             </div>
-            <CourseForm onSubmit={handleCreateCourse} departments={departments} />
+            
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                Course Title <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g., Data Structures and Algorithms"
+                value={courseFormData.title}
+                onChange={(e) => setCourseFormData({ ...courseFormData, title: e.target.value })}
+                style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                Department <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+              <select
+                value={courseFormData.department_id}
+                onChange={(e) => setCourseFormData({ ...courseFormData, department_id: e.target.value })}
+                style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
+              >
+                <option value="">Select department...</option>
+                {departments.map(d => (
+                  <option key={d.id} value={d.id}>{d.name} ({d.code})</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                Credit Hours <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+              <select
+                value={courseFormData.credit_hours}
+                onChange={(e) => setCourseFormData({ ...courseFormData, credit_hours: e.target.value })}
+                style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
+              >
+                {[1, 2, 3, 4].map(ch => (
+                  <option key={ch} value={ch}>{ch} Credit Hour{ch > 1 ? 's' : ''}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                Teacher <span style={{ color: '#ef4444' }}>*</span>
+              </label>
+              <select
+                value={courseFormData.teacher_id}
+                onChange={(e) => setCourseFormData({ ...courseFormData, teacher_id: e.target.value })}
+                style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
+              >
+                <option value="">Select teacher...</option>
+                {teachers.map(teacher => {
+                  const courseCount = courses.filter(c => c.teacher_id === teacher.id).length;
+                  const isAtLimit = courseCount >= 3;
+                  return (
+                    <option key={teacher.id} value={teacher.id} disabled={isAtLimit}>
+                      {teacher.user?.name || teacher.user?.email || `Teacher #${teacher.id}`} - {teacher.department?.code || 'N/A'} ({courseCount}/3 courses) {isAtLimit ? '(At Limit)' : ''}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <Button variant="secondary" onClick={() => {
+                setShowAddModal(false);
+                setCourseFormData({ title: "", department_id: "", credit_hours: "3", teacher_id: "" });
+              }}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleCreateCourse}>
+                Create Course
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reassign Teacher Modal */}
+      {showReassignModal && selectedCourse && (
+        <div style={modalOverlayStyle} onClick={() => setShowReassignModal(false)}>
+          <div style={modalStyle} onClick={e => e.stopPropagation()}>
+            <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#111827' }}>Reassign Teacher</h2>
+                <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#6b7280' }}>{selectedCourse.title}</p>
+              </div>
+              <button onClick={() => setShowReassignModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
+                <X size={20} color="#6b7280" />
+              </button>
+            </div>
+            
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                Select New Teacher
+              </label>
+              <select
+                value={selectedTeacherId}
+                onChange={(e) => setSelectedTeacherId(e.target.value)}
+                style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
+              >
+                <option value="">Select teacher...</option>
+                {teachers.map(teacher => {
+                  const courseCount = courses.filter(c => c.teacher_id === teacher.id).length;
+                  const isAtLimit = courseCount >= 3 && teacher.id !== selectedCourse.teacher_id;
+                  return (
+                    <option key={teacher.id} value={teacher.id} disabled={isAtLimit}>
+                      {teacher.user?.name || teacher.user?.email || `Teacher #${teacher.id}`} - {teacher.department?.code || 'N/A'} ({courseCount}/3 courses) {isAtLimit ? '(At Limit)' : ''}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <Button variant="secondary" onClick={() => setShowReassignModal(false)}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleSubmitReassign}>
+                Reassign Teacher
+              </Button>
+            </div>
           </div>
         </div>
       )}

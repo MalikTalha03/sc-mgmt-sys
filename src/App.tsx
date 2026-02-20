@@ -5,7 +5,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import StudentPage from "./pages/student";
 import TeacherPage from "./pages/teacher";
-import GradesPage from "./pages/grades";
+import TeacherGradesPage from "./pages/teacherGrades";
 import LoginPage from "./pages/login";
 
 // Admin pages
@@ -122,7 +122,7 @@ function AppContent() {
             path="/teacher/:courseId/grades"
             element={
               <ProtectedRoute allowedRoles={["teacher"]}>
-                <GradesPage />
+                <TeacherGradesPage />
               </ProtectedRoute>
             }
           />

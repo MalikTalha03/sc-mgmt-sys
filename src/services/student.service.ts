@@ -1,4 +1,12 @@
 import { API_ENDPOINTS, getAuthHeaders } from './api.config';
+import type { Department } from './department.service';
+
+export interface User {
+  id: number;
+  email: string;
+  name?: string;
+  role: 'student' | 'teacher' | 'admin';
+}
 
 export interface Student {
   id: number;
@@ -9,6 +17,8 @@ export interface Student {
   max_credit_per_semester?: number;
   created_at: string;
   updated_at: string;
+  user?: User;
+  department?: Department;
 }
 
 class StudentService {
@@ -34,6 +44,11 @@ class StudentService {
     }
 
     return response.json();
+  }
+
+  async getByUserId(userId: number): Promise<Student | null> {
+    const students = await this.getAll();
+    return students.find(s => s.user_id === userId) || null;
   }
 
   async create(data: Omit<Student, 'id' | 'created_at' | 'updated_at'>): Promise<Student> {
@@ -76,6 +91,20 @@ class StudentService {
       const error = await response.json();
       throw new Error(error.error || 'Failed to delete student');
     }
+  }
+
+  async promoteSemester(id: number): Promise<Student> {
+    const response = await fetch(`${API_ENDPOINTS.STUDENTS}/${id}/promote_semester`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || error.errors?.join(', ') || 'Failed to promote student');
+    }
+
+    return response.json();
   }
 }
 

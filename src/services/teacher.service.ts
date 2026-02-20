@@ -1,4 +1,6 @@
 import { API_ENDPOINTS, getAuthHeaders } from './api.config';
+import type { Department } from './department.service';
+import type { User } from './student.service';
 
 export type TeacherDesignation = 'visiting_faculty' | 'lecturer' | 'assistant_professor' | 'associate_professor' | 'professor';
 
@@ -9,6 +11,8 @@ export interface Teacher {
   designation: TeacherDesignation;
   created_at: string;
   updated_at: string;
+  user?: User;
+  department?: Department;
 }
 
 class TeacherService {
@@ -34,6 +38,11 @@ class TeacherService {
     }
 
     return response.json();
+  }
+
+  async getByUserId(userId: number): Promise<Teacher | null> {
+    const teachers = await this.getAll();
+    return teachers.find(t => t.user_id === userId) || null;
   }
 
   async create(data: Omit<Teacher, 'id' | 'created_at' | 'updated_at'>): Promise<Teacher> {

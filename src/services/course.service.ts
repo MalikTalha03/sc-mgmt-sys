@@ -1,4 +1,6 @@
 import { API_ENDPOINTS, getAuthHeaders } from './api.config';
+import type { Department } from './department.service';
+import type { Teacher } from './teacher.service';
 
 export interface Course {
   id: number;
@@ -8,6 +10,8 @@ export interface Course {
   teacher_id: number;
   created_at: string;
   updated_at: string;
+  department?: Department;
+  teacher?: Teacher;
 }
 
 class CourseService {

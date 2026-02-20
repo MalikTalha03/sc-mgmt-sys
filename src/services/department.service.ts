@@ -4,6 +4,7 @@ export interface Department {
   id: number;
   name: string;
   code: string;
+  isActive?: boolean;
   courses_count?: number;
   teachers_count?: number;
   students_count?: number;

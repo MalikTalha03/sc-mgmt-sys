@@ -66,22 +66,13 @@ export default function TeacherPage() {
     ).join(' ');
   };
 
-  const containerStyle: React.CSSProperties = { minHeight: '100vh', background: '#f3f4f6' };
-  const contentStyle: React.CSSProperties = { padding: '24px 32px' };
-  const cardStyle: React.CSSProperties = { background: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', padding: '20px', marginBottom: '20px' };
-  const statsCardStyle: React.CSSProperties = { background: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', padding: '20px' };
-  const tableContainerStyle: React.CSSProperties = { background: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', overflow: 'hidden' };
-  const tableStyle: React.CSSProperties = { width: '100%', borderCollapse: 'collapse' };
-  const thStyle: React.CSSProperties = { padding: '14px 20px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' };
-  const tdStyle: React.CSSProperties = { padding: '16px 20px', fontSize: '14px', color: '#374151', borderBottom: '1px solid #f3f4f6' };
-
   if (loading) {
     return (
-      <div style={containerStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-          <div style={{ textAlign: 'center' }}>
-            <Loader2 size={40} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 16px', color: '#9333ea' }} />
-            <p style={{ color: '#6b7280', margin: 0 }}>Loading your dashboard...</p>
+      <div className="page-bg">
+        <div className="loading-container">
+          <div className="loading-content">
+            <Loader2 size={40} className="loading-spinner-purple" />
+            <p className="loading-text">Loading your dashboard...</p>
           </div>
         </div>
       </div>
@@ -90,12 +81,12 @@ export default function TeacherPage() {
 
   if (!teacher) {
     return (
-      <div style={containerStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-          <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', padding: '40px', textAlign: 'center' }}>
-            <Users size={64} style={{ margin: '0 auto 16px', color: '#9ca3af' }} />
-            <h1 style={{ fontSize: '20px', fontWeight: '700', color: '#111827', margin: '0 0 8px' }}>No Teacher Record</h1>
-            <p style={{ color: '#6b7280', margin: 0 }}>No teacher record found for your account.</p>
+      <div className="page-bg">
+        <div className="empty-state-container">
+          <div className="empty-state-card">
+            <Users size={64} className="empty-state-icon" />
+            <h1 className="empty-state-title">No Teacher Record</h1>
+            <p className="empty-state-description">No teacher record found for your account.</p>
           </div>
         </div>
       </div>
@@ -107,71 +98,71 @@ export default function TeacherPage() {
   );
 
   return (
-    <div style={containerStyle}>
-      <div style={contentStyle}>
+    <div className="page-bg">
+      <div className="page-content">
         {/* Header */}
-        <div style={cardStyle}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="card">
+          <div className="flex-between">
             <div>
-              <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#111827', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Users size={28} color="#9333ea" />
                 Teacher Dashboard
               </h1>
-              <p style={{ color: '#6b7280', fontSize: '14px', margin: '4px 0 0' }}>
+              <p className="page-subtitle">
                 {teacher.user?.name && <span style={{ fontWeight: '500', color: '#111827' }}>{teacher.user.name} • </span>}
                 {department?.name} • {formatDesignation(teacher.designation)}
               </p>
             </div>
             <div style={{ textAlign: 'right' }}>
               <p style={{ fontSize: '28px', fontWeight: '700', color: '#9333ea', margin: 0 }}>{courses.length}</p>
-              <p style={{ fontSize: '13px', color: '#6b7280', margin: '4px 0 0' }}>Courses</p>
+              <p className="stat-label">Courses</p>
             </div>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '20px' }}>
-          <div style={statsCardStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ background: '#f3e8ff', borderRadius: '10px', padding: '12px' }}>
+        <div className="stats-grid-sm">
+          <div className="card-no-mb">
+            <div className="stats-row">
+              <div className="stat-icon-purple">
                 <BookOpen size={24} color="#9333ea" />
               </div>
               <div>
-                <p style={{ fontSize: '24px', fontWeight: '700', color: '#111827', margin: 0 }}>{courses.length}</p>
-                <p style={{ fontSize: '13px', color: '#6b7280', margin: '4px 0 0' }}>Active Courses</p>
+                <p className="stat-value">{courses.length}</p>
+                <p className="stat-label">Active Courses</p>
               </div>
             </div>
           </div>
 
-          <div style={statsCardStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ background: '#fce7f3', borderRadius: '10px', padding: '12px' }}>
+          <div className="card-no-mb">
+            <div className="stats-row">
+              <div className="stat-icon-pink">
                 <Users size={24} color="#ec4899" />
               </div>
               <div>
-                <p style={{ fontSize: '24px', fontWeight: '700', color: '#111827', margin: 0 }}>{totalStudents}</p>
-                <p style={{ fontSize: '13px', color: '#6b7280', margin: '4px 0 0' }}>Total Students</p>
+                <p className="stat-value">{totalStudents}</p>
+                <p className="stat-label">Total Students</p>
               </div>
             </div>
           </div>
 
-          <div style={statsCardStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ background: '#e0e7ff', borderRadius: '10px', padding: '12px' }}>
+          <div className="card-no-mb">
+            <div className="stats-row">
+              <div className="stat-icon-indigo">
                 <Building2 size={24} color="#4f46e5" />
               </div>
               <div>
                 <p style={{ fontSize: '18px', fontWeight: '700', color: '#111827', margin: 0 }}>{department?.code}</p>
-                <p style={{ fontSize: '13px', color: '#6b7280', margin: '4px 0 0' }}>Department</p>
+                <p className="stat-label">Department</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Courses List */}
-        <div style={tableContainerStyle}>
-          <div style={{ padding: '20px', borderBottom: '1px solid #e5e7eb' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', margin: 0 }}>My Courses</h2>
+        <div className="table-container">
+          <div className="card-header-row">
+            <h2 className="card-title">My Courses</h2>
           </div>
           {courses.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '60px', color: '#6b7280' }}>
@@ -179,50 +170,32 @@ export default function TeacherPage() {
               <p style={{ margin: 0 }}>No courses assigned</p>
             </div>
           ) : (
-            <table style={tableStyle}>
+            <table className="data-table">
               <thead>
                 <tr>
-                  <th style={thStyle}>Course</th>
-                  <th style={thStyle}>Credits</th>
-                  <th style={thStyle}>Students</th>
-                  <th style={thStyle}>Actions</th>
+                  <th className="th">Course</th>
+                  <th className="th">Credits</th>
+                  <th className="th">Students</th>
+                  <th className="th">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {courses.map((course) => {
                   const enrolledCount = getEnrollmentCountForCourse(course.id);
-                  
                   return (
                     <tr key={course.id}>
-                      <td style={tdStyle}>
-                        <span style={{ fontWeight: '500', color: '#111827' }}>{course.title}</span>
+                      <td className="td">
+                        <span className="font-medium text-primary">{course.title}</span>
                       </td>
-                      <td style={tdStyle}>
-                        {course.credit_hours} hrs
-                      </td>
-                      <td style={tdStyle}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: '#f3e8ff', color: '#7e22ce', borderRadius: '6px', fontSize: '12px', fontWeight: '500' }}>
+                      <td className="td">{course.credit_hours} hrs</td>
+                      <td className="td">
+                        <span className="badge-purple-sm">
                           <Users size={12} />
                           {enrolledCount} students
                         </span>
                       </td>
-                      <td style={tdStyle}>
-                        <button
-                          onClick={() => handleManageGrades(course.id)}
-                          style={{
-                            padding: '6px 12px',
-                            background: '#9333ea',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            fontSize: '13px',
-                            fontWeight: '500',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                        >
+                      <td className="td">
+                        <button className="btn-sm-purple" onClick={() => handleManageGrades(course.id)}>
                           <Edit2 size={14} />
                           Manage Grades
                         </button>

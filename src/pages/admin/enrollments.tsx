@@ -171,35 +171,6 @@ export default function AdminEnrollmentsPage() {
     return true;
   });
 
-  const getStatusStyle = (status: string): React.CSSProperties => {
-    const baseStyle: React.CSSProperties = {
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '4px',
-      padding: '4px 10px',
-      borderRadius: '6px',
-      fontSize: '12px',
-      fontWeight: '500'
-    };
-
-    switch (status) {
-      case 'pending':
-        return { ...baseStyle, background: '#fef3c7', color: '#92400e' };
-      case 'approved':
-        return { ...baseStyle, background: '#dbeafe', color: '#1e40af' };
-      case 'rejected':
-        return { ...baseStyle, background: '#fee2e2', color: '#991b1b' };
-      case 'completed':
-        return { ...baseStyle, background: '#dcfce7', color: '#15803d' };
-      case 'dropped':
-        return { ...baseStyle, background: '#f3f4f6', color: '#374151' };
-      case 'withdrawn':
-        return { ...baseStyle, background: '#fce7f3', color: '#9f1239' };
-      default:
-        return { ...baseStyle, background: '#f3f4f6', color: '#374151' };
-    }
-  };
-
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pending': return <Clock size={14} />;
@@ -212,40 +183,16 @@ export default function AdminEnrollmentsPage() {
     }
   };
 
-  // Inline styles
-  const containerStyle: React.CSSProperties = { minHeight: '100vh', background: '#f3f4f6', padding: '24px' };
-  const cardStyle: React.CSSProperties = { background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '20px', marginBottom: '20px' };
-  const tabStyle = (active: boolean): React.CSSProperties => ({
-    padding: '12px 24px',
-    border: 'none',
-    background: active ? '#3b82f6' : '#e5e7eb',
-    color: active ? 'white' : '#6b7280',
-    fontWeight: '600',
-    cursor: 'pointer',
-    borderRadius: '8px',
-    fontSize: '14px',
-    transition: 'all 0.2s'
-  });
-  const searchBoxStyle: React.CSSProperties = { position: 'relative', flex: '1', minWidth: '250px' };
-  const inputStyle: React.CSSProperties = { width: '100%', padding: '10px 10px 10px 40px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '14px' };
-  const tableContainerStyle: React.CSSProperties = { background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' };
-  const tableStyle: React.CSSProperties = { width: '100%', borderCollapse: 'collapse' };
-  const thStyle: React.CSSProperties = { padding: '14px 20px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' };
-  const tdStyle: React.CSSProperties = { padding: '16px 20px', fontSize: '14px', color: '#374151', borderBottom: '1px solid #f3f4f6' };
-  const buttonStyle: React.CSSProperties = { padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer', border: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' };
-  const modalStyle: React.CSSProperties = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 };
-  const modalContentStyle: React.CSSProperties = { background: 'white', borderRadius: '12px', padding: '24px', width: '90%', maxWidth: '500px' };
-
   const filteredPending = filterEnrollments(pendingEnrollments);
   const filteredApproved = filterEnrollments(approvedEnrollments);
 
   if (loading) {
     return (
-      <div style={containerStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh' }}>
-          <div style={{ textAlign: 'center' }}>
-            <Loader2 size={40} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 16px', color: '#3b82f6' }} />
-            <p style={{ color: '#6b7280', margin: 0 }}>Loading enrollments...</p>
+      <div className="page-bg loading-page">
+        <div className="loading-center">
+          <div className="loading-content">
+            <Loader2 size={40} className="loading-spinner-purple" />
+            <p className="text-muted">Loading enrollments...</p>
           </div>
         </div>
       </div>
@@ -253,24 +200,21 @@ export default function AdminEnrollmentsPage() {
   }
 
   return (
-    <div style={containerStyle}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+    <div className="page-bg">
+      <div className="page-content">
         {/* Header */}
-        <div style={cardStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+        <div className="card card-p24">
+          <div className="card-header-row">
             <div>
-              <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#111827', margin: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <h1 className="page-title-lg" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <ClipboardList size={32} color="#3b82f6" />
                 Enrollment Manager
               </h1>
-              <p style={{ color: '#6b7280', fontSize: '14px', margin: '8px 0 0' }}>
+              <p className="page-subtitle">
                 {pendingEnrollments.length} pending • {approvedEnrollments.length} processed
               </p>
             </div>
-            <button
-              onClick={() => setShowAddModal(true)}
-              style={{ ...buttonStyle, background: '#3b82f6', color: 'white', padding: '10px 20px' }}
-            >
+            <button className="btn-primary" onClick={() => setShowAddModal(true)}>
               <Plus size={16} />
               Create Enrollment
             </button>
@@ -278,93 +222,95 @@ export default function AdminEnrollmentsPage() {
         </div>
 
         {/* Tabs and Search */}
-        <div style={cardStyle}>
-          <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-            <button onClick={() => setActiveTab("pending")} style={tabStyle(activeTab === "pending")}>
+        <div className="card card-p24">
+          <div className="flex-between" style={{ justifyContent: 'flex-start', gap: '12px', marginBottom: '16px' }}>
+            <button
+              className={`tab-btn${activeTab === "pending" ? " tab-active" : ""}`}
+              onClick={() => setActiveTab("pending")}
+            >
               Pending Requests ({pendingEnrollments.length})
             </button>
-            <button onClick={() => setActiveTab("approved")} style={tabStyle(activeTab === "approved")}>
+            <button
+              className={`tab-btn${activeTab === "approved" ? " tab-active" : ""}`}
+              onClick={() => setActiveTab("approved")}
+            >
               All Enrollments ({approvedEnrollments.length})
             </button>
           </div>
 
-          <div style={searchBoxStyle}>
-            <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} size={18} />
+          <div className="search-relative">
+            <Search className="search-icon-abs" size={18} />
             <input
               type="text"
               placeholder="Search by student, course, or ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={inputStyle}
+              className="search-input-icon"
             />
           </div>
         </div>
 
         {/* Pending Requests Table */}
         {activeTab === "pending" && (
-          <div style={tableContainerStyle}>
+          <div className="table-container">
             {filteredPending.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '60px 20px', color: '#6b7280' }}>
+              <div className="select-placeholder-box">
                 <Clock size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
-                <p style={{ fontSize: '16px', fontWeight: '500', margin: '0 0 8px' }}>No pending requests</p>
-                <p style={{ fontSize: '14px', margin: 0 }}>Students haven't submitted any enrollment requests yet</p>
+                <p className="font-semibold" style={{ fontSize: '16px', margin: '0 0 8px' }}>No pending requests</p>
+                <p className="text-sm text-muted" style={{ margin: 0 }}>Students haven't submitted any enrollment requests yet</p>
               </div>
             ) : (
-              <table style={tableStyle}>
+              <table className="data-table">
                 <thead>
                   <tr>
-                    <th style={thStyle}>ID</th>
-                    <th style={thStyle}>Student</th>
-                    <th style={thStyle}>Course</th>
-                    <th style={thStyle}>Status</th>
-                    <th style={thStyle}>Actions</th>
+                    <th className="th">ID</th>
+                    <th className="th">Student</th>
+                    <th className="th">Course</th>
+                    <th className="th">Status</th>
+                    <th className="th">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredPending.map((enrollment) => (
                     <tr key={enrollment.id}>
-                      <td style={tdStyle}>
-                        <span style={{ fontWeight: '600', color: '#3b82f6' }}>{enrollment.id}</span>
+                      <td className="td">
+                        <span className="font-semibold" style={{ color: '#3b82f6' }}>{enrollment.id}</span>
                       </td>
-                      <td style={tdStyle}>
-                        <div>
-                          <div style={{ fontWeight: '500', color: '#111827' }}>
-                            {enrollment.student?.user?.name || enrollment.student?.user?.email || `Student #${enrollment.student_id}`}
-                          </div>
-                          <p style={{ fontSize: '12px', color: '#6b7280', margin: '4px 0 0' }}>
-                            {enrollment.student?.department?.name || 'N/A'}
-                          </p>
+                      <td className="td">
+                        <div className="font-semibold">
+                          {enrollment.student?.user?.name || enrollment.student?.user?.email || `Student #${enrollment.student_id}`}
+                        </div>
+                        <div className="text-sm text-muted">
+                          {enrollment.student?.department?.name || 'N/A'}
                         </div>
                       </td>
-                      <td style={tdStyle}>
-                        <div>
-                          <div style={{ fontWeight: '500', color: '#111827' }}>
-                            {enrollment.course?.title || `Course #${enrollment.course_id}`}
-                          </div>
-                          <p style={{ fontSize: '12px', color: '#6b7280', margin: '4px 0 0' }}>
-                            {enrollment.course?.credit_hours} credit hours
-                          </p>
+                      <td className="td">
+                        <div className="font-semibold">
+                          {enrollment.course?.title || `Course #${enrollment.course_id}`}
+                        </div>
+                        <div className="text-sm text-muted">
+                          {enrollment.course?.credit_hours} credit hours
                         </div>
                       </td>
-                      <td style={tdStyle}>
-                        <span style={getStatusStyle(enrollment.status)}>
+                      <td className="td">
+                        <span className={`status-badge-${enrollment.status}`}>
                           {getStatusIcon(enrollment.status)}
                           {enrollment.status}
                         </span>
                       </td>
-                      <td style={tdStyle}>
+                      <td className="td">
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <button
+                            className="action-btn action-btn-approve"
                             onClick={() => handleApprove(enrollment.id)}
-                            style={{ ...buttonStyle, background: '#dcfce7', color: '#15803d' }}
                             title="Approve enrollment"
                           >
                             <CheckCircle size={14} />
                             Approve
                           </button>
                           <button
+                            className="action-btn action-btn-reject"
                             onClick={() => handleReject(enrollment.id)}
-                            style={{ ...buttonStyle, background: '#fee2e2', color: '#991b1b' }}
                             title="Reject request"
                           >
                             <XCircle size={14} />
@@ -382,69 +328,65 @@ export default function AdminEnrollmentsPage() {
 
         {/* Approved/All Enrollments Table */}
         {activeTab === "approved" && (
-          <div style={tableContainerStyle}>
+          <div className="table-container">
             {filteredApproved.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '60px 20px', color: '#6b7280' }}>
+              <div className="select-placeholder-box">
                 <ClipboardList size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
-                <p style={{ fontSize: '16px', fontWeight: '500', margin: '0 0 8px' }}>No enrollments found</p>
+                <p className="font-semibold" style={{ fontSize: '16px', margin: '0 0 8px' }}>No enrollments found</p>
               </div>
             ) : (
-              <table style={tableStyle}>
+              <table className="data-table">
                 <thead>
                   <tr>
-                    <th style={thStyle}>ID</th>
-                    <th style={thStyle}>Student</th>
-                    <th style={thStyle}>Course</th>
-                    <th style={thStyle}>Status</th>
-                    <th style={thStyle}>Actions</th>
+                    <th className="th">ID</th>
+                    <th className="th">Student</th>
+                    <th className="th">Course</th>
+                    <th className="th">Status</th>
+                    <th className="th">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredApproved.map((enrollment) => (
                     <tr key={enrollment.id}>
-                      <td style={tdStyle}>
-                        <span style={{ fontWeight: '600', color: '#3b82f6' }}>#{enrollment.id}</span>
+                      <td className="td">
+                        <span className="font-semibold" style={{ color: '#3b82f6' }}>#{enrollment.id}</span>
                       </td>
-                      <td style={tdStyle}>
-                        <div>
-                          <div style={{ fontWeight: '500', color: '#111827' }}>
-                            {enrollment.student?.user?.name || enrollment.student?.user?.email || `Student #${enrollment.student_id}`}
-                          </div>
-                          <p style={{ fontSize: '12px', color: '#6b7280', margin: '4px 0 0' }}>
-                            {enrollment.student?.department?.name || 'N/A'}
-                          </p>
+                      <td className="td">
+                        <div className="font-semibold">
+                          {enrollment.student?.user?.name || enrollment.student?.user?.email || `Student #${enrollment.student_id}`}
+                        </div>
+                        <div className="text-sm text-muted">
+                          {enrollment.student?.department?.name || 'N/A'}
                         </div>
                       </td>
-                      <td style={tdStyle}>
-                        <div>
-                          <div style={{ fontWeight: '500', color: '#111827' }}>
-                            {enrollment.course?.title || `Course #${enrollment.course_id}`}
-                          </div>
-                          <p style={{ fontSize: '12px', color: '#6b7280', margin: '4px 0 0' }}>
-                            {enrollment.course?.credit_hours} credit hours
-                          </p>
+                      <td className="td">
+                        <div className="font-semibold">
+                          {enrollment.course?.title || `Course #${enrollment.course_id}`}
+                        </div>
+                        <div className="text-sm text-muted">
+                          {enrollment.course?.credit_hours} credit hours
                         </div>
                       </td>
-                      <td style={tdStyle}>
-                        <span style={getStatusStyle(enrollment.status)}>
+                      <td className="td">
+                        <span className={`status-badge-${enrollment.status}`}>
                           {getStatusIcon(enrollment.status)}
                           {enrollment.status}
                         </span>
                       </td>
-                      <td style={tdStyle}>
+                      <td className="td">
                         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                           {enrollment.status === 'approved' && (
                             <>
                               <button
+                                className="action-btn action-btn-complete"
                                 onClick={() => handleComplete(enrollment.id)}
-                                style={{ ...buttonStyle, background: '#dcfce7', color: '#15803d' }}
                                 title="Mark as completed"
                               >
                                 <Award size={14} />
                               </button>
                               <button
+                                className="action-btn action-btn-drop"
                                 onClick={() => handleDrop(enrollment.id)}
-                                style={{ ...buttonStyle, background: '#f3f4f6', color: '#374151' }}
                                 title="Drop student"
                               >
                                 <Ban size={14} />
@@ -463,58 +405,41 @@ export default function AdminEnrollmentsPage() {
 
         {/* Create Enrollment Modal */}
         {showAddModal && (
-          <div style={modalStyle} onClick={() => setShowAddModal(false)}>
-            <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
-              <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#111827', margin: '0 0 20px' }}>
-               Create Enrollment
+          <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+            <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+              <h2 className="card-title" style={{ margin: '0 0 20px' }}>
+                Create Enrollment
               </h2>
-              
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-                  Student <span style={{ color: '#ef4444' }}>*</span>
+
+              <div className="form-group">
+                <label className="form-label">
+                  Student <span className="required-star">*</span>
                 </label>
                 <input
                   type="text"
                   placeholder="Search student by name, email, or ID..."
                   value={studentSearch}
                   onChange={(e) => setStudentSearch(e.target.value)}
-                  style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', marginBottom: '8px' }}
+                  className="form-control"
+                  style={{ marginBottom: '8px' }}
                 />
-                <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #e5e7eb', borderRadius: '6px' }}>
+                <div className="scrollable-select-list">
                   {filteredStudents.length === 0 ? (
-                    <div style={{ padding: '20px', textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>
-                      No students found
-                    </div>
+                    <div className="select-list-empty">No students found</div>
                   ) : (
                     filteredStudents.slice(0, 50).map(s => (
                       <div
                         key={s.id}
+                        className={`select-list-item${selectedStudent === s.id.toString() ? ' selected' : ''}`}
                         onClick={() => {
                           setSelectedStudent(s.id.toString());
-                          setSelectedCourse(""); // Reset course when student changes
-                        }}
-                        style={{
-                          padding: '12px',
-                          cursor: 'pointer',
-                          background: selectedStudent === s.id.toString() ? '#eff6ff' : 'white',
-                          borderBottom: '1px solid #f3f4f6',
-                          transition: 'all 0.15s'
-                        }}
-                        onMouseEnter={(e) => {
-                          if (selectedStudent !== s.id.toString()) {
-                            e.currentTarget.style.background = '#f9fafb';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (selectedStudent !== s.id.toString()) {
-                            e.currentTarget.style.background = 'white';
-                          }
+                          setSelectedCourse("");
                         }}
                       >
-                        <div style={{ fontWeight: '500', color: '#111827', fontSize: '14px' }}>
+                        <div className="font-semibold text-sm">
                           {s.user?.name || s.user?.email || `Student #${s.id}`}
                         </div>
-                        <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
+                        <div className="text-sm text-muted">
                           {s.user?.email} • {s.department?.name || 'N/A'} • Semester {s.semester}
                         </div>
                       </div>
@@ -523,10 +448,10 @@ export default function AdminEnrollmentsPage() {
                 </div>
               </div>
 
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-                  Course <span style={{ color: '#ef4444' }}>*</span>
-                  {!selectedStudent && <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: 'normal' }}> (Select student first)</span>}
+              <div className="form-group">
+                <label className="form-label">
+                  Course <span className="required-star">*</span>
+                  {!selectedStudent && <span className="text-sm text-muted" style={{ fontWeight: 'normal' }}> (Select student first)</span>}
                 </label>
                 {selectedStudent ? (
                   <>
@@ -535,40 +460,23 @@ export default function AdminEnrollmentsPage() {
                       placeholder="Search course by title, department, or ID..."
                       value={courseSearch}
                       onChange={(e) => setCourseSearch(e.target.value)}
-                      style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', marginBottom: '8px' }}
+                      className="form-control"
+                      style={{ marginBottom: '8px' }}
                     />
-                    <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #e5e7eb', borderRadius: '6px' }}>
+                    <div className="scrollable-select-list">
                       {availableCourses.length === 0 ? (
-                        <div style={{ padding: '20px', textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>
+                        <div className="select-list-empty">
                           {courseSearch ? 'No courses found' : 'Student is already enrolled in all available courses'}
                         </div>
                       ) : (
                         availableCourses.slice(0, 50).map(c => (
                           <div
                             key={c.id}
+                            className={`select-list-item${selectedCourse === c.id.toString() ? ' selected' : ''}`}
                             onClick={() => setSelectedCourse(c.id.toString())}
-                            style={{
-                              padding: '12px',
-                              cursor: 'pointer',
-                              background: selectedCourse === c.id.toString() ? '#eff6ff' : 'white',
-                              borderBottom: '1px solid #f3f4f6',
-                              transition: 'all 0.15s'
-                            }}
-                            onMouseEnter={(e) => {
-                              if (selectedCourse !== c.id.toString()) {
-                                e.currentTarget.style.background = '#f9fafb';
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (selectedCourse !== c.id.toString()) {
-                                e.currentTarget.style.background = 'white';
-                              }
-                            }}
                           >
-                            <div style={{ fontWeight: '500', color: '#111827', fontSize: '14px' }}>
-                              {c.title}
-                            </div>
-                            <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
+                            <div className="font-semibold text-sm">{c.title}</div>
+                            <div className="text-sm text-muted">
                               {c.department?.name || 'N/A'} • {c.credit_hours} credits • {c.teacher?.user?.name || 'No teacher'}
                             </div>
                           </div>
@@ -577,14 +485,15 @@ export default function AdminEnrollmentsPage() {
                     </div>
                   </>
                 ) : (
-                  <div style={{ padding: '40px 20px', textAlign: 'center', background: '#f9fafb', borderRadius: '6px', border: '1px solid #e5e7eb' }}>
-                    <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>Please select a student first</p>
+                  <div className="select-placeholder-box">
+                    <p className="text-sm text-muted" style={{ margin: 0 }}>Please select a student first</p>
                   </div>
                 )}
               </div>
 
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <div className="form-actions">
                 <button
+                  className="btn-dark-cancel"
                   onClick={() => {
                     setShowAddModal(false);
                     setSelectedStudent("");
@@ -592,21 +501,14 @@ export default function AdminEnrollmentsPage() {
                     setStudentSearch("");
                     setCourseSearch("");
                   }}
-                  style={{ ...buttonStyle, background: '#e5e7eb', color: '#374151', padding: '10px 20px' }}
                 >
                   Cancel
                 </button>
                 <button
+                  className="btn-primary"
                   onClick={handleCreateEnrollment}
                   disabled={!selectedStudent || !selectedCourse}
-                  style={{ 
-                    ...buttonStyle, 
-                    background: (!selectedStudent || !selectedCourse) ? '#d1d5db' : '#3b82f6', 
-                    color: 'white', 
-                    padding: '10px 20px',
-                    cursor: (!selectedStudent || !selectedCourse) ? 'not-allowed' : 'pointer',
-                    opacity: (!selectedStudent || !selectedCourse) ? 0.6 : 1
-                  }}
+                  style={{ opacity: (!selectedStudent || !selectedCourse) ? 0.6 : 1, cursor: (!selectedStudent || !selectedCourse) ? 'not-allowed' : 'pointer' }}
                 >
                   Create Enrollment
                 </button>

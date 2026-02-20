@@ -56,53 +56,11 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const containerStyle: React.CSSProperties = { minHeight: '100vh', background: '#f3f4f6' };
-  const contentStyle: React.CSSProperties = { padding: '24px 32px' };
-  const headerStyle: React.CSSProperties = { marginBottom: '32px' };
-  const statsGridStyle: React.CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '32px' };
-  
-  const statCardStyle: React.CSSProperties = {
-    background: 'white',
-    borderRadius: '12px',
-    padding: '24px',
-    border: '1px solid #e5e7eb',
-  };
-
-  const quickLinksStyle: React.CSSProperties = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: '16px',
-  };
-
-  const quickLinkStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '20px 24px',
-    background: 'white',
-    borderRadius: '12px',
-    border: '1px solid #e5e7eb',
-    textDecoration: 'none',
-    color: '#374151',
-    transition: 'all 0.2s',
-  };
-
-  const iconBoxStyle = (color: string): React.CSSProperties => ({
-    width: '48px',
-    height: '48px',
-    borderRadius: '12px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: color === 'indigo' ? '#eef2ff' : color === 'green' ? '#ecfdf5' : color === 'blue' ? '#eff6ff' : color === 'orange' ? '#fff7ed' : '#fef3c7',
-    color: color === 'indigo' ? '#4f46e5' : color === 'green' ? '#059669' : color === 'blue' ? '#2563eb' : color === 'orange' ? '#ea580c' : '#d97706',
-  });
-
   if (loading) {
     return (
-      <div style={{ ...containerStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ textAlign: 'center', color: '#6b7280' }}>
-          <Loader2 size={32} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 12px' }} />
+      <div className="page-bg loading-page">
+        <div className="loading-content" style={{ color: '#6b7280' }}>
+          <Loader2 size={32} className="loading-spinner" style={{ margin: '0 auto 12px' }} />
           <p>Loading dashboard...</p>
         </div>
       </div>
@@ -110,134 +68,126 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div style={containerStyle}>
-      <div style={contentStyle}>
-        <div style={headerStyle}>
-          <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#111827', margin: 0 }}>Dashboard</h1>
-          <p style={{ color: '#6b7280', fontSize: '15px', margin: '8px 0 0' }}>Welcome to the School Management System</p>
+    <div className="page-bg">
+      <div className="page-content">
+        <div style={{ marginBottom: '32px' }}>
+          <h1 className="page-title-lg">Dashboard</h1>
+          <p className="page-subtitle" style={{ margin: '8px 0 0' }}>Welcome to the School Management System</p>
         </div>
 
         {/* Stats Grid */}
-        <div style={statsGridStyle}>
-          <div style={statCardStyle}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div className="stats-grid-auto">
+          <div className="card-no-mb">
+            <div className="stat-card-inner">
               <div>
-                <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 8px' }}>Total Students</p>
-                <h2 style={{ fontSize: '32px', fontWeight: '700', color: '#111827', margin: 0 }}>{stats.students}</h2>
+                <p className="stat-label" style={{ margin: '0 0 8px' }}>Total Students</p>
+                <h2 className="stat-big-value">{stats.students}</h2>
               </div>
-              <div style={iconBoxStyle('indigo')}><GraduationCap size={24} /></div>
+              <div className="icon-box-indigo"><GraduationCap size={24} /></div>
             </div>
             <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#059669' }}>
               <TrendingUp size={14} /> Active learners
             </div>
           </div>
 
-          <div style={statCardStyle}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div className="card-no-mb">
+            <div className="stat-card-inner">
               <div>
-                <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 8px' }}>Total Teachers</p>
-                <h2 style={{ fontSize: '32px', fontWeight: '700', color: '#111827', margin: 0 }}>{stats.teachers}</h2>
+                <p className="stat-label" style={{ margin: '0 0 8px' }}>Total Teachers</p>
+                <h2 className="stat-big-value">{stats.teachers}</h2>
               </div>
-              <div style={iconBoxStyle('green')}><Users size={24} /></div>
+              <div className="icon-box-green"><Users size={24} /></div>
             </div>
-            <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#6b7280' }}>
-              Faculty members
-            </div>
+            <div className="text-sm text-muted" style={{ marginTop: '16px' }}>Faculty members</div>
           </div>
 
-          <div style={statCardStyle}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div className="card-no-mb">
+            <div className="stat-card-inner">
               <div>
-                <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 8px' }}>Total Courses</p>
-                <h2 style={{ fontSize: '32px', fontWeight: '700', color: '#111827', margin: 0 }}>{stats.courses}</h2>
+                <p className="stat-label" style={{ margin: '0 0 8px' }}>Total Courses</p>
+                <h2 className="stat-big-value">{stats.courses}</h2>
               </div>
-              <div style={iconBoxStyle('blue')}><BookOpen size={24} /></div>
+              <div className="icon-box-blue"><BookOpen size={24} /></div>
             </div>
-            <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#6b7280' }}>
-              Available courses
-            </div>
+            <div className="text-sm text-muted" style={{ marginTop: '16px' }}>Available courses</div>
           </div>
 
-          <div style={statCardStyle}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div className="card-no-mb">
+            <div className="stat-card-inner">
               <div>
-                <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 8px' }}>Departments</p>
-                <h2 style={{ fontSize: '32px', fontWeight: '700', color: '#111827', margin: 0 }}>{stats.departments}</h2>
+                <p className="stat-label" style={{ margin: '0 0 8px' }}>Departments</p>
+                <h2 className="stat-big-value">{stats.departments}</h2>
               </div>
-              <div style={iconBoxStyle('orange')}><Building2 size={24} /></div>
+              <div className="icon-box-orange"><Building2 size={24} /></div>
             </div>
-            <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#6b7280' }}>
-              Academic departments
-            </div>
+            <div className="text-sm text-muted" style={{ marginTop: '16px' }}>Academic departments</div>
           </div>
 
-          <div style={statCardStyle}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div className="card-no-mb">
+            <div className="stat-card-inner">
               <div>
-                <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 8px' }}>Total Enrollments</p>
-                <h2 style={{ fontSize: '32px', fontWeight: '700', color: '#111827', margin: 0 }}>{stats.enrollments}</h2>
+                <p className="stat-label" style={{ margin: '0 0 8px' }}>Total Enrollments</p>
+                <h2 className="stat-big-value">{stats.enrollments}</h2>
               </div>
-              <div style={iconBoxStyle('yellow')}><ClipboardList size={24} /></div>
+              <div className="icon-box-yellow"><ClipboardList size={24} /></div>
             </div>
-            <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#6b7280' }}>
-              Student enrollments
-            </div>
+            <div className="text-sm text-muted" style={{ marginTop: '16px' }}>Student enrollments</div>
           </div>
         </div>
 
         {/* Quick Links */}
         <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0 0 16px' }}>Quick Actions</h3>
-        <div style={quickLinksStyle}>
-          <Link to="/admin/students" style={quickLinkStyle}>
+        <div className="quick-links-grid">
+          <Link to="/admin/students" className="quick-link">
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={iconBoxStyle('indigo')}><GraduationCap size={22} /></div>
+              <div className="icon-box-indigo"><GraduationCap size={22} /></div>
               <div>
                 <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: '#111827' }}>Manage Students</h4>
-                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6b7280' }}>Add, edit, or remove students</p>
+                <p className="text-sm text-muted" style={{ margin: '4px 0 0' }}>Add, edit, or remove students</p>
               </div>
             </div>
             <ArrowRight size={18} color="#9ca3af" />
           </Link>
 
-          <Link to="/admin/teachers" style={quickLinkStyle}>
+          <Link to="/admin/teachers" className="quick-link">
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={iconBoxStyle('green')}><Users size={22} /></div>
+              <div className="icon-box-green"><Users size={22} /></div>
               <div>
                 <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: '#111827' }}>Manage Teachers</h4>
-                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6b7280' }}>Manage faculty members</p>
+                <p className="text-sm text-muted" style={{ margin: '4px 0 0' }}>Manage faculty members</p>
               </div>
             </div>
             <ArrowRight size={18} color="#9ca3af" />
           </Link>
 
-          <Link to="/admin/courses" style={quickLinkStyle}>
+          <Link to="/admin/courses" className="quick-link">
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={iconBoxStyle('blue')}><BookOpen size={22} /></div>
+              <div className="icon-box-blue"><BookOpen size={22} /></div>
               <div>
                 <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: '#111827' }}>Manage Courses</h4>
-                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6b7280' }}>Configure course offerings</p>
+                <p className="text-sm text-muted" style={{ margin: '4px 0 0' }}>Configure course offerings</p>
               </div>
             </div>
             <ArrowRight size={18} color="#9ca3af" />
           </Link>
 
-          <Link to="/admin/departments" style={quickLinkStyle}>
+          <Link to="/admin/departments" className="quick-link">
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={iconBoxStyle('orange')}><Building2 size={22} /></div>
+              <div className="icon-box-orange"><Building2 size={22} /></div>
               <div>
                 <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: '#111827' }}>Manage Departments</h4>
-                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6b7280' }}>Organize academic units</p>
+                <p className="text-sm text-muted" style={{ margin: '4px 0 0' }}>Organize academic units</p>
               </div>
             </div>
             <ArrowRight size={18} color="#9ca3af" />
           </Link>
 
-          <Link to="/admin/enrollments" style={quickLinkStyle}>
+          <Link to="/admin/enrollments" className="quick-link">
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={iconBoxStyle('yellow')}><ClipboardList size={22} /></div>
+              <div className="icon-box-yellow"><ClipboardList size={22} /></div>
               <div>
                 <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: '#111827' }}>Enrollment Requests</h4>
-                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6b7280' }}>Approve or reject enrollments</p>
+                <p className="text-sm text-muted" style={{ margin: '4px 0 0' }}>Approve or reject enrollments</p>
               </div>
             </div>
             <ArrowRight size={18} color="#9ca3af" />

@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { 
-  Home, 
-  BookOpen, 
-  Building2, 
-  GraduationCap, 
+import {
+  Home,
+  BookOpen,
+  Building2,
+  GraduationCap,
   UserCircle,
   LogOut,
   ChevronLeft,
@@ -72,126 +72,47 @@ export function Sidebar() {
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        height: '100vh',
-        width: isOpen ? '260px' : '72px',
-        background: 'white',
-        borderRight: '1px solid #e5e7eb',
-        display: 'flex',
-        flexDirection: 'column',
-        transition: 'width 0.3s ease',
-        zIndex: 50
-      }}
+      className="sidebar-container"
+      style={{ width: isOpen ? '260px' : '72px', transition: 'width 0.3s ease' }}
     >
       {/* Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '20px 16px',
-        borderBottom: '1px solid #e5e7eb'
-      }}>
+      <div className="sidebar-header flex-between">
         {isOpen && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: '36px',
-              height: '36px',
-              background: '#4f46e5',
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
+          <div className="sidebar-logo">
+            <div className="sidebar-logo-box">
               <GraduationCap size={20} color="white" />
             </div>
-            <span style={{ fontWeight: '700', fontSize: '18px', color: '#1f2937' }}>
-              School SMS
-            </span>
+            <span className="sidebar-logo-text">School SMS</span>
           </div>
         )}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          style={{
-            width: '32px',
-            height: '32px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: '#f3f4f6',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            color: '#6b7280'
-          }}
-        >
+        <button className="sidebar-toggle" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
         </button>
       </div>
 
       {/* User Info */}
       {userData && isOpen && (
-        <div style={{
-          padding: '16px',
-          borderBottom: '1px solid #e5e7eb'
-        }}>
-          <p style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '4px' }}>
-            Logged in as
-          </p>
-          <p style={{ 
-            fontWeight: '600', 
-            color: '#1f2937',
-            fontSize: '14px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap'
-          }}>
-            {userData.email}
-          </p>
-          <span style={{
-            display: 'inline-block',
-            marginTop: '8px',
-            padding: '4px 10px',
-            background: '#eef2ff',
-            color: '#4f46e5',
-            borderRadius: '6px',
-            fontSize: '11px',
-            fontWeight: '600',
-            textTransform: 'uppercase'
-          }}>
+        <div className="sidebar-user-info">
+          <p className="sidebar-user-role">Logged in as</p>
+          <p className="sidebar-user-email">{userData.email}</p>
+          <span className={`sidebar-role-badge sidebar-role-${userData.role}`}>
             {userData.role}
           </span>
         </div>
       )}
 
       {/* Menu Items */}
-      <nav style={{ flex: 1, padding: '16px 12px', overflowY: 'auto' }}>
+      <nav className="sidebar-nav">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
           const accessible = hasAccess(item);
-          
+
           if (!accessible) {
-            // Disabled item - not clickable
             return (
               <div
                 key={item.path}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '12px 14px',
-                  marginBottom: '4px',
-                  borderRadius: '10px',
-                  background: 'transparent',
-                  color: '#d1d5db',
-                  fontWeight: '500',
-                  fontSize: '14px',
-                  cursor: 'not-allowed',
-                  opacity: 0.6,
-                }}
+                className="sidebar-nav-disabled"
                 title={`${item.label} - Admin access required`}
               >
                 <Icon size={20} />
@@ -209,30 +130,7 @@ export function Sidebar() {
             <Link
               key={item.path}
               to={item.path}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '12px 14px',
-                marginBottom: '4px',
-                borderRadius: '10px',
-                textDecoration: 'none',
-                background: active ? '#4f46e5' : 'transparent',
-                color: active ? 'white' : '#4b5563',
-                fontWeight: active ? '600' : '500',
-                fontSize: '14px',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                if (!active) {
-                  e.currentTarget.style.background = '#f3f4f6';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!active) {
-                  e.currentTarget.style.background = 'transparent';
-                }
-              }}
+              className={`sidebar-nav-link${active ? ' active' : ''}`}
             >
               <Icon size={20} />
               {isOpen && <span>{item.label}</span>}
@@ -242,36 +140,8 @@ export function Sidebar() {
       </nav>
 
       {/* Logout Button */}
-      <div style={{
-        padding: '16px 12px',
-        borderTop: '1px solid #e5e7eb'
-      }}>
-        <button
-          onClick={handleLogout}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            width: '100%',
-            padding: '12px 14px',
-            background: 'transparent',
-            border: 'none',
-            borderRadius: '10px',
-            cursor: 'pointer',
-            color: '#6b7280',
-            fontWeight: '500',
-            fontSize: '14px',
-            transition: 'all 0.2s'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#fef2f2';
-            e.currentTarget.style.color = '#dc2626';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent';
-            e.currentTarget.style.color = '#6b7280';
-          }}
-        >
+      <div className="sidebar-footer">
+        <button className="sidebar-logout-btn" onClick={handleLogout}>
           <LogOut size={20} />
           {isOpen && <span>Logout</span>}
         </button>

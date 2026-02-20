@@ -148,38 +148,18 @@ export default function AdminCoursesPage() {
   const filtered = filterCourses();
   const totalPages = getTotalPages(filtered.length);
 
-  const containerStyle: React.CSSProperties = { minHeight: '100vh', background: '#f3f4f6' };
-  const contentStyle: React.CSSProperties = { padding: '24px 32px' };
-  const headerStyle: React.CSSProperties = { marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' };
-  const searchBoxStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: 'white', border: '1px solid #e5e7eb', borderRadius: '10px', flex: 1, maxWidth: '400px' };
-  const tableContainerStyle: React.CSSProperties = { background: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', overflow: 'hidden' };
-  const tableStyle: React.CSSProperties = { width: '100%', borderCollapse: 'collapse' };
-  const thStyle: React.CSSProperties = { padding: '14px 20px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' };
-  const tdStyle: React.CSSProperties = { padding: '16px 20px', fontSize: '14px', color: '#374151', borderBottom: '1px solid #f3f4f6' };
-  const modalOverlayStyle: React.CSSProperties = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 };
-  const modalStyle: React.CSSProperties = { background: 'white', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflow: 'auto' };
-
-  const badgeStyle = (color: string): React.CSSProperties => ({
-    padding: '4px 10px',
-    background: color === 'indigo' ? '#eef2ff' : color === 'blue' ? '#eff6ff' : '#f3f4f6',
-    color: color === 'indigo' ? '#4f46e5' : color === 'blue' ? '#2563eb' : '#6b7280',
-    borderRadius: '6px',
-    fontSize: '12px',
-    fontWeight: '500',
-  });
-
   return (
-    <div style={containerStyle}>
-      <div style={contentStyle}>
-        <div style={headerStyle}>
+    <div className="page-bg">
+      <div className="page-content">
+        <div className="page-header">
           <div>
-            <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#111827', margin: 0 }}>Courses</h1>
-            <p style={{ color: '#6b7280', fontSize: '14px', margin: '4px 0 0' }}>Manage all courses in the system</p>
+            <h1 className="page-title">Courses</h1>
+            <p className="page-subtitle" style={{ margin: '4px 0 0' }}>Manage all courses in the system</p>
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <div style={searchBoxStyle}>
+            <div className="search-box-inline">
               <Search size={18} color="#9ca3af" />
-              <input type="text" placeholder="Search by title, code, or department..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ flex: 1, border: 'none', outline: 'none', fontSize: '14px', color: '#374151', background: 'transparent' }} />
+              <input type="text" placeholder="Search by title, code, or department..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="search-field" />
             </div>
             <Button variant="primary" onClick={() => setShowAddModal(true)}>
               <Plus size={18} /> Add Course
@@ -187,10 +167,10 @@ export default function AdminCoursesPage() {
           </div>
         </div>
 
-        <div style={tableContainerStyle}>
+        <div className="table-container">
           {loading ? (
             <div style={{ textAlign: 'center', padding: '60px', color: '#6b7280' }}>
-              <Loader2 size={24} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 8px' }} />
+              <Loader2 size={24} className="loading-spinner" style={{ margin: '0 auto 8px' }} />
               <p>Loading...</p>
             </div>
           ) : filtered.length === 0 ? (
@@ -200,36 +180,36 @@ export default function AdminCoursesPage() {
             </div>
           ) : (
             <>
-              <table style={tableStyle}>
+              <table className="data-table">
                 <thead>
                   <tr>
-                    <th style={thStyle}>ID</th>
-                    <th style={thStyle}>Course Title</th>
-                    <th style={thStyle}>Department</th>
-                    <th style={{ ...thStyle, textAlign: 'center' }}>Credits</th>
-                    <th style={thStyle}>Teacher</th>
-                    <th style={{ ...thStyle, textAlign: 'right' }}>Actions</th>
+                    <th className="th">ID</th>
+                    <th className="th">Course Title</th>
+                    <th className="th">Department</th>
+                    <th className="th th-center">Credits</th>
+                    <th className="th">Teacher</th>
+                    <th className="th th-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginate(filtered).map((course) => (
                     <tr key={course.id}>
-                      <td style={tdStyle}><span style={{ fontWeight: '600', color: '#4f46e5' }}>{course.id}</span></td>
-                      <td style={tdStyle}><span style={{ fontWeight: '500', color: '#111827' }}>{course.title}</span></td>
-                      <td style={tdStyle}>
+                      <td className="td"><span style={{ fontWeight: '600', color: '#4f46e5' }}>{course.id}</span></td>
+                      <td className="td"><span style={{ fontWeight: '500', color: '#111827' }}>{course.title}</span></td>
+                      <td className="td">
                         <div>
                           <div style={{ fontWeight: '500', color: '#111827' }}>{course.department?.name || `Dept #${course.department_id}`}</div>
-                          <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>{course.department?.code}</div>
+                          <div className="text-sm text-muted" style={{ marginTop: '2px' }}>{course.department?.code}</div>
                         </div>
                       </td>
-                      <td style={{ ...tdStyle, textAlign: 'center' }}><span style={badgeStyle('blue')}>{course.credit_hours}</span></td>
-                      <td style={tdStyle}>
+                      <td className="td td-center"><span className="badge-blue-sm">{course.credit_hours}</span></td>
+                      <td className="td">
                         <div>
                           <div style={{ fontWeight: '500', color: '#111827' }}>{course.teacher?.user?.name || course.teacher?.user?.email || `Teacher #${course.teacher_id}`}</div>
-                          <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>{course.teacher?.user?.email || course.teacher?.department?.name || 'N/A'}</div>
+                          <div className="text-sm text-muted" style={{ marginTop: '2px' }}>{course.teacher?.user?.email || course.teacher?.department?.name || 'N/A'}</div>
                         </div>
                       </td>
-                      <td style={{ ...tdStyle, textAlign: 'right' }}>
+                      <td className="td td-right">
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                           <Button variant="secondary" size="sm" onClick={() => handleReassignTeacher(course)} title="Reassign Teacher">
                             <UserCog size={14} />
@@ -244,16 +224,16 @@ export default function AdminCoursesPage() {
                 </tbody>
               </table>
               {filtered.length > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderTop: '1px solid #e5e7eb', background: '#fafafa' }}>
-                  <span style={{ fontSize: '13px', color: '#6b7280' }}>
+                <div className="pagination-bar">
+                  <span className="pagination-info">
                     {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, filtered.length)}-{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
                   </span>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} style={{ padding: '8px 12px', border: '1px solid #e5e7eb', borderRadius: '8px', background: currentPage === 1 ? '#f3f4f6' : 'white', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', color: '#374151' }}>
+                  <div className="pagination-controls">
+                    <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
                       <ChevronLeft size={16} />
                     </button>
-                    <span style={{ fontSize: '13px', color: '#374151', padding: '0 8px' }}>Page {currentPage} / {totalPages || 1}</span>
-                    <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage >= totalPages} style={{ padding: '8px 12px', border: '1px solid #e5e7eb', borderRadius: '8px', background: currentPage >= totalPages ? '#f3f4f6' : 'white', cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', color: '#374151' }}>
+                    <span className="pagination-label">Page {currentPage} / {totalPages || 1}</span>
+                    <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage >= totalPages}>
                       <ChevronRight size={16} />
                     </button>
                   </div>
@@ -266,36 +246,36 @@ export default function AdminCoursesPage() {
 
       {/* Add Modal */}
       {showAddModal && (
-        <div style={modalOverlayStyle} onClick={() => setShowAddModal(false)}>
-          <div style={modalStyle} onClick={e => e.stopPropagation()}>
-            <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#111827' }}>Add New Course</h2>
-              <button onClick={() => setShowAddModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
+        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <div className="modal-header-row">
+              <h2 className="page-title" style={{ margin: 0 }}>Add New Course</h2>
+              <button className="btn-close" onClick={() => setShowAddModal(false)}>
                 <X size={20} color="#6b7280" />
               </button>
             </div>
-            
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-                Course Title <span style={{ color: '#ef4444' }}>*</span>
+
+            <div className="form-group">
+              <label className="form-label">
+                Course Title <span className="required-star">*</span>
               </label>
               <input
                 type="text"
                 placeholder="e.g., Data Structures and Algorithms"
                 value={courseFormData.title}
                 onChange={(e) => setCourseFormData({ ...courseFormData, title: e.target.value })}
-                style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
+                className="form-control"
               />
             </div>
 
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-                Department <span style={{ color: '#ef4444' }}>*</span>
+            <div className="form-group">
+              <label className="form-label">
+                Department <span className="required-star">*</span>
               </label>
               <select
                 value={courseFormData.department_id}
                 onChange={(e) => setCourseFormData({ ...courseFormData, department_id: e.target.value })}
-                style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
+                className="form-control"
               >
                 <option value="">Select department...</option>
                 {departments.map(d => (
@@ -304,14 +284,14 @@ export default function AdminCoursesPage() {
               </select>
             </div>
 
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-                Credit Hours <span style={{ color: '#ef4444' }}>*</span>
+            <div className="form-group">
+              <label className="form-label">
+                Credit Hours <span className="required-star">*</span>
               </label>
               <select
                 value={courseFormData.credit_hours}
                 onChange={(e) => setCourseFormData({ ...courseFormData, credit_hours: e.target.value })}
-                style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
+                className="form-control"
               >
                 {[1, 2, 3, 4].map(ch => (
                   <option key={ch} value={ch}>{ch} Credit Hour{ch > 1 ? 's' : ''}</option>
@@ -319,14 +299,14 @@ export default function AdminCoursesPage() {
               </select>
             </div>
 
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-                Teacher <span style={{ color: '#ef4444' }}>*</span>
+            <div className="form-group">
+              <label className="form-label">
+                Teacher <span className="required-star">*</span>
               </label>
               <select
                 value={courseFormData.teacher_id}
                 onChange={(e) => setCourseFormData({ ...courseFormData, teacher_id: e.target.value })}
-                style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
+                className="form-control"
               >
                 <option value="">Select teacher...</option>
                 {teachers.map(teacher => {
@@ -341,7 +321,7 @@ export default function AdminCoursesPage() {
               </select>
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <div className="form-actions">
               <Button variant="secondary" onClick={() => {
                 setShowAddModal(false);
                 setCourseFormData({ title: "", department_id: "", credit_hours: "3", teacher_id: "" });
@@ -358,26 +338,24 @@ export default function AdminCoursesPage() {
 
       {/* Reassign Teacher Modal */}
       {showReassignModal && selectedCourse && (
-        <div style={modalOverlayStyle} onClick={() => setShowReassignModal(false)}>
-          <div style={modalStyle} onClick={e => e.stopPropagation()}>
-            <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="modal-overlay" onClick={() => setShowReassignModal(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <div className="modal-header-row">
               <div>
-                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#111827' }}>Reassign Teacher</h2>
-                <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#6b7280' }}>{selectedCourse.title}</p>
+                <h2 className="page-title" style={{ margin: 0 }}>Reassign Teacher</h2>
+                <p className="page-subtitle" style={{ margin: '4px 0 0' }}>{selectedCourse.title}</p>
               </div>
-              <button onClick={() => setShowReassignModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
+              <button className="btn-close" onClick={() => setShowReassignModal(false)}>
                 <X size={20} color="#6b7280" />
               </button>
             </div>
-            
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-                Select New Teacher
-              </label>
+
+            <div className="form-group">
+              <label className="form-label">Select New Teacher</label>
               <select
                 value={selectedTeacherId}
                 onChange={(e) => setSelectedTeacherId(e.target.value)}
-                style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
+                className="form-control"
               >
                 <option value="">Select teacher...</option>
                 {teachers.map(teacher => {
@@ -392,7 +370,7 @@ export default function AdminCoursesPage() {
               </select>
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <div className="form-actions">
               <Button variant="secondary" onClick={() => setShowReassignModal(false)}>
                 Cancel
               </Button>

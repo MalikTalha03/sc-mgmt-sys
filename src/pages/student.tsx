@@ -121,22 +121,13 @@ export default function StudentPage() {
     return courses.filter(c => !enrolledCourseIds.includes(c.id));
   };
 
-  const containerStyle: React.CSSProperties = { minHeight: '100vh', background: '#f3f4f6' };
-  const contentStyle: React.CSSProperties = { padding: '24px 32px' };
-  const cardStyle: React.CSSProperties = { background: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', padding: '20px', marginBottom: '20px' };
-  const statsCardStyle: React.CSSProperties = { background: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', padding: '20px' };
-  const tableContainerStyle: React.CSSProperties = { background: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', overflow: 'hidden' };
-  const tableStyle: React.CSSProperties = { width: '100%', borderCollapse: 'collapse' };
-  const thStyle: React.CSSProperties = { padding: '14px 20px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', background: '#f9fafb', borderBottom: '1px solid #e5e7eb' };
-  const tdStyle: React.CSSProperties = { padding: '16px 20px', fontSize: '14px', color: '#374151', borderBottom: '1px solid #f3f4f6' };
-
   if (loading) {
     return (
-      <div style={containerStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-          <div style={{ textAlign: 'center' }}>
-            <Loader2 size={40} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 16px', color: '#3b82f6' }} />
-            <p style={{ color: '#6b7280', margin: 0 }}>Loading your dashboard...</p>
+      <div className="page-bg">
+        <div className="loading-container">
+          <div className="loading-content">
+            <Loader2 size={40} className="loading-spinner" />
+            <p className="loading-text">Loading your dashboard...</p>
           </div>
         </div>
       </div>
@@ -145,12 +136,12 @@ export default function StudentPage() {
 
   if (!student) {
     return (
-      <div style={containerStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-          <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', padding: '40px', textAlign: 'center' }}>
-            <GraduationCap size={64} style={{ margin: '0 auto 16px', color: '#9ca3af' }} />
-            <h1 style={{ fontSize: '20px', fontWeight: '700', color: '#111827', margin: '0 0 8px' }}>No Student Record</h1>
-            <p style={{ color: '#6b7280', margin: 0 }}>No student record found for your account.</p>
+      <div className="page-bg">
+        <div className="empty-state-container">
+          <div className="empty-state-card">
+            <GraduationCap size={64} className="empty-state-icon" />
+            <h1 className="empty-state-title">No Student Record</h1>
+            <p className="empty-state-description">No student record found for your account.</p>
           </div>
         </div>
       </div>
@@ -162,89 +153,74 @@ export default function StudentPage() {
     null;
 
   return (
-    <div style={containerStyle}>
-      <div style={contentStyle}>
+    <div className="page-bg">
+      <div className="page-content">
         {/* Header */}
-        <div style={cardStyle}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="card">
+          <div className="flex-between">
             <div>
-              <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#111827', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <GraduationCap size={28} color="#3b82f6" />
                 Student Dashboard
               </h1>
-              <p style={{ color: '#6b7280', fontSize: '14px', margin: '4px 0 0' }}>
-                {student.user?.name && <span style={{ fontWeight: '500', color: '#111827' }}>{student.user.name} • </span>}
+              <p className="page-subtitle">
+                {student.user?.name && <span className="font-medium text-primary">{student.user.name} • </span>}
                 {department?.name} • Semester {student.semester}
               </p>
             </div>
             {cgpa !== null && (
               <div style={{ textAlign: 'right' }}>
-                <p style={{ fontSize: '28px', fontWeight: '700', color: '#3b82f6', margin: 0 }}>{cgpa.toFixed(2)}</p>
-                <p style={{ fontSize: '13px', color: '#6b7280', margin: '4px 0 0' }}>CGPA</p>
+                <p className="cgpa-value">{cgpa.toFixed(2)}</p>
+                <p className="cgpa-label">CGPA</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '20px' }}>
-          <div style={statsCardStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ background: '#dbeafe', borderRadius: '10px', padding: '12px' }}>
+        <div className="stats-grid-sm">
+          <div className="card-no-mb">
+            <div className="stats-row">
+              <div className="stat-icon-blue">
                 <BookOpen size={24} color="#3b82f6" />
               </div>
               <div>
-                <p style={{ fontSize: '24px', fontWeight: '700', color: '#111827', margin: 0 }}>{enrollments.filter(e => e.status === 'approved').length}</p>
-                <p style={{ fontSize: '13px', color: '#6b7280', margin: '4px 0 0' }}>Active Courses</p>
+                <p className="stat-value">{enrollments.filter(e => e.status === 'approved').length}</p>
+                <p className="stat-label">Active Courses</p>
               </div>
             </div>
           </div>
 
-          <div style={statsCardStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ background: '#dcfce7', borderRadius: '10px', padding: '12px' }}>
+          <div className="card-no-mb">
+            <div className="stats-row">
+              <div className="stat-icon-green">
                 <Trophy size={24} color="#16a34a" />
               </div>
               <div>
-                <p style={{ fontSize: '24px', fontWeight: '700', color: '#111827', margin: 0 }}>{enrollments.filter(e => e.status === 'completed').length}</p>
-                <p style={{ fontSize: '13px', color: '#6b7280', margin: '4px 0 0' }}>Completed</p>
+                <p className="stat-value">{enrollments.filter(e => e.status === 'completed').length}</p>
+                <p className="stat-label">Completed</p>
               </div>
             </div>
           </div>
 
-          <div style={statsCardStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ background: '#f3e8ff', borderRadius: '10px', padding: '12px' }}>
+          <div className="card-no-mb">
+            <div className="stats-row">
+              <div className="stat-icon-purple">
                 <Calendar size={24} color="#9333ea" />
               </div>
               <div>
-                <p style={{ fontSize: '24px', fontWeight: '700', color: '#111827', margin: 0 }}>{student.semester}</p>
-                <p style={{ fontSize: '13px', color: '#6b7280', margin: '4px 0 0' }}>Current Semester</p>
+                <p className="stat-value">{student.semester}</p>
+                <p className="stat-label">Current Semester</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Enrollments List */}
-        <div style={tableContainerStyle}>
-          <div style={{ padding: '20px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', margin: 0 }}>My Courses</h2>
-            <button
-              onClick={() => setShowEnrollModal(true)}
-              style={{
-                padding: '10px 20px',
-                background: '#3b82f6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
+        <div className="table-container">
+          <div className="card-header-row">
+            <h2 className="card-title">My Courses</h2>
+            <button className="btn-primary" onClick={() => setShowEnrollModal(true)}>
               <Plus size={18} />
               Request Enrollment
             </button>
@@ -255,14 +231,14 @@ export default function StudentPage() {
               <p style={{ margin: 0 }}>No enrollments found</p>
             </div>
           ) : (
-            <table style={tableStyle}>
+            <table className="data-table">
               <thead>
                 <tr>
-                  <th style={thStyle}>Course</th>
-                  <th style={thStyle}>Credits</th>
-                  <th style={thStyle}>Status</th>
-                  <th style={thStyle}>Grade</th>
-                  <th style={thStyle}>Actions</th>
+                  <th className="th">Course</th>
+                  <th className="th">Credits</th>
+                  <th className="th">Status</th>
+                  <th className="th">Grade</th>
+                  <th className="th">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -271,50 +247,31 @@ export default function StudentPage() {
                   const gradeTotal = grade ? calculateGradeTotal(grade.id) : null;
                   const letterGrade = gradeTotal !== null ? getLetterGrade(gradeTotal) : null;
                   const courseGradeItems = enrollment.course?.id ? getGradeItemsForCourse(enrollment.course.id) : [];
-                  
+                  const statusClass =
+                    enrollment.status === 'approved' ? 'enrollment-status-approved' :
+                    enrollment.status === 'completed' ? 'enrollment-status-completed' :
+                    'enrollment-status-other';
+
                   return (
                     <tr key={enrollment.id}>
-                      <td style={tdStyle}>
-                        <span style={{ fontWeight: '500', color: '#111827' }}>{enrollment.course?.title || 'N/A'}</span>
+                      <td className="td">
+                        <span className="font-medium text-primary">{enrollment.course?.title || 'N/A'}</span>
                       </td>
-                      <td style={tdStyle}>
-                        {enrollment.course?.credit_hours || 0} hrs
+                      <td className="td">{enrollment.course?.credit_hours || 0} hrs</td>
+                      <td className="td">
+                        <span className={statusClass}>{enrollment.status}</span>
                       </td>
-                      <td style={tdStyle}>
-                        <span style={{
-                          padding: '4px 10px',
-                          background: enrollment.status === 'approved' ? '#dbeafe' : enrollment.status === 'completed' ? '#dcfce7' : '#fee2e2',
-                          color: enrollment.status === 'approved' ? '#1e40af' : enrollment.status === 'completed' ? '#15803d' : '#991b1b',
-                          borderRadius: '6px',
-                          fontSize: '12px',
-                          fontWeight: '500'
-                        }}>
-                          {enrollment.status}
-                        </span>
-                      </td>
-                      <td style={tdStyle}>
+                      <td className="td">
                         {letterGrade ? (
                           <span style={{ fontWeight: '600', color: '#3b82f6' }}>{letterGrade}</span>
                         ) : (
-                          <span style={{ color: '#9ca3af' }}>Not graded</span>
+                          <span className="text-sm-gray">Not graded</span>
                         )}
                       </td>
-                      <td style={tdStyle}>
+                      <td className="td">
                         <button
                           onClick={() => handleViewGrades(enrollment)}
-                          style={{
-                            padding: '6px 12px',
-                            background: courseGradeItems.length > 0 ? '#3b82f6' : '#9ca3af',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            fontSize: '13px',
-                            fontWeight: '500',
-                            cursor: courseGradeItems.length > 0 ? 'pointer' : 'not-allowed',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
+                          className={courseGradeItems.length > 0 ? 'btn-sm-blue' : 'btn-sm-gray'}
                           disabled={courseGradeItems.length === 0}
                         >
                           <FileText size={14} />
@@ -331,40 +288,13 @@ export default function StudentPage() {
 
         {/* Grade Details Modal */}
         {showGradeDetails && selectedEnrollment && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000
-          }}>
-            <div style={{
-              background: 'white',
-              borderRadius: '12px',
-              padding: '24px',
-              maxWidth: '750px',
-              width: '90%',
-              maxHeight: '80vh',
-              overflow: 'auto'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <div className="modal-overlay">
+            <div className="modal-box-md">
+              <div className="modal-header-row">
                 <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#111827', margin: 0 }}>
                   {selectedEnrollment.course?.title} - Grade Details
                 </h2>
-                <button
-                  onClick={() => setShowGradeDetails(false)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: '4px'
-                  }}
-                >
+                <button className="btn-close" onClick={() => setShowGradeDetails(false)}>
                   <X size={24} color="#6b7280" />
                 </button>
               </div>
@@ -406,8 +336,8 @@ export default function StudentPage() {
                 return (
                   <>
                     {/* Overall Performance */}
-                    <div style={{ marginBottom: '24px', padding: '16px', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div className="performance-box">
+                      <div className="flex-between">
                         <div>
                           <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 4px' }}>Overall Performance</p>
                           <p style={{ fontSize: '28px', fontWeight: '700', color: '#111827', margin: 0 }}>
@@ -424,21 +354,13 @@ export default function StudentPage() {
                     </div>
 
                     {/* Grade Items Table */}
-                    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+                    <table className="grade-modal-table">
                       <thead>
                         <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-                          <th style={{ padding: '12px 8px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase' }}>
-                            Category
-                          </th>
-                          <th style={{ padding: '12px 8px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase' }}>
-                            Obtained
-                          </th>
-                          <th style={{ padding: '12px 8px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase' }}>
-                            Max Marks
-                          </th>
-                          <th style={{ padding: '12px 8px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase' }}>
-                            Percentage
-                          </th>
+                          <th className="th-d">Category</th>
+                          <th className="th-d td-d-center">Obtained</th>
+                          <th className="th-d td-d-center">Max Marks</th>
+                          <th className="th-d td-d-center">Percentage</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -447,36 +369,19 @@ export default function StudentPage() {
                           const percentage = (item.obtained_marks / item.max_marks) * 100;
                           return (
                             <tr key={item.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                              <td style={{ padding: '12px 8px', fontSize: '14px', color: '#111827' }}>
-                                Assignment {index + 1}
-                              </td>
-                              <td style={{ padding: '12px 8px', fontSize: '14px', color: '#111827', textAlign: 'center', fontWeight: '600' }}>
-                                {item.obtained_marks}
-                              </td>
-                              <td style={{ padding: '12px 8px', fontSize: '14px', color: '#111827', textAlign: 'center' }}>
-                                {item.max_marks}
-                              </td>
-                              <td style={{ padding: '12px 8px', fontSize: '14px', color: '#111827', textAlign: 'center', fontWeight: '600' }}>
-                                {percentage.toFixed(1)}%
-                              </td>
+                              <td className="td-d">Assignment {index + 1}</td>
+                              <td className="td-d td-d-center font-semibold">{item.obtained_marks}</td>
+                              <td className="td-d td-d-center">{item.max_marks}</td>
+                              <td className="td-d td-d-center font-semibold">{percentage.toFixed(1)}%</td>
                             </tr>
                           );
                         })}
-                        {/* Category Total for Assignments */}
                         {assignments.length > 0 && (
-                          <tr style={{ borderBottom: '1px solid #e5e7eb', background: '#f9fafb' }}>
-                            <td style={{ padding: '10px 8px', fontSize: '13px', color: '#6b7280', fontWeight: '600' }}>
-                              Assignments Total
-                            </td>
-                            <td style={{ padding: '10px 8px', fontSize: '13px', color: '#111827', textAlign: 'center', fontWeight: '700' }}>
-                              {assignmentTotal.obtained}
-                            </td>
-                            <td style={{ padding: '10px 8px', fontSize: '13px', color: '#111827', textAlign: 'center', fontWeight: '700' }}>
-                              {assignmentTotal.max}
-                            </td>
-                            <td style={{ padding: '10px 8px', fontSize: '13px', color: '#111827', textAlign: 'center', fontWeight: '700' }}>
-                              {assignmentTotal.percentage.toFixed(1)}%
-                            </td>
+                          <tr className="td-d-subtotal">
+                            <td className="font-semibold text-muted" style={{ padding: '10px 8px', fontSize: '13px' }}>Assignments Total</td>
+                            <td className="td-d-center font-bold" style={{ padding: '10px 8px', fontSize: '13px', color: '#111827' }}>{assignmentTotal.obtained}</td>
+                            <td className="td-d-center font-bold" style={{ padding: '10px 8px', fontSize: '13px', color: '#111827' }}>{assignmentTotal.max}</td>
+                            <td className="td-d-center font-bold" style={{ padding: '10px 8px', fontSize: '13px', color: '#111827' }}>{assignmentTotal.percentage.toFixed(1)}%</td>
                           </tr>
                         )}
 
@@ -485,36 +390,19 @@ export default function StudentPage() {
                           const percentage = (item.obtained_marks / item.max_marks) * 100;
                           return (
                             <tr key={item.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                              <td style={{ padding: '12px 8px', fontSize: '14px', color: '#111827' }}>
-                                Quiz {index + 1}
-                              </td>
-                              <td style={{ padding: '12px 8px', fontSize: '14px', color: '#111827', textAlign: 'center', fontWeight: '600' }}>
-                                {item.obtained_marks}
-                              </td>
-                              <td style={{ padding: '12px 8px', fontSize: '14px', color: '#111827', textAlign: 'center' }}>
-                                {item.max_marks}
-                              </td>
-                              <td style={{ padding: '12px 8px', fontSize: '14px', color: '#111827', textAlign: 'center', fontWeight: '600' }}>
-                                {percentage.toFixed(1)}%
-                              </td>
+                              <td className="td-d">Quiz {index + 1}</td>
+                              <td className="td-d td-d-center font-semibold">{item.obtained_marks}</td>
+                              <td className="td-d td-d-center">{item.max_marks}</td>
+                              <td className="td-d td-d-center font-semibold">{percentage.toFixed(1)}%</td>
                             </tr>
                           );
                         })}
-                        {/* Category Total for Quizzes */}
                         {quizzes.length > 0 && (
-                          <tr style={{ borderBottom: '1px solid #e5e7eb', background: '#f9fafb' }}>
-                            <td style={{ padding: '10px 8px', fontSize: '13px', color: '#6b7280', fontWeight: '600' }}>
-                              Quizzes Total
-                            </td>
-                            <td style={{ padding: '10px 8px', fontSize: '13px', color: '#111827', textAlign: 'center', fontWeight: '700' }}>
-                              {quizTotal.obtained}
-                            </td>
-                            <td style={{ padding: '10px 8px', fontSize: '13px', color: '#111827', textAlign: 'center', fontWeight: '700' }}>
-                              {quizTotal.max}
-                            </td>
-                            <td style={{ padding: '10px 8px', fontSize: '13px', color: '#111827', textAlign: 'center', fontWeight: '700' }}>
-                              {quizTotal.percentage.toFixed(1)}%
-                            </td>
+                          <tr className="td-d-subtotal">
+                            <td className="font-semibold text-muted" style={{ padding: '10px 8px', fontSize: '13px' }}>Quizzes Total</td>
+                            <td className="td-d-center font-bold" style={{ padding: '10px 8px', fontSize: '13px', color: '#111827' }}>{quizTotal.obtained}</td>
+                            <td className="td-d-center font-bold" style={{ padding: '10px 8px', fontSize: '13px', color: '#111827' }}>{quizTotal.max}</td>
+                            <td className="td-d-center font-bold" style={{ padding: '10px 8px', fontSize: '13px', color: '#111827' }}>{quizTotal.percentage.toFixed(1)}%</td>
                           </tr>
                         )}
 
@@ -523,36 +411,19 @@ export default function StudentPage() {
                           const percentage = (item.obtained_marks / item.max_marks) * 100;
                           return (
                             <tr key={item.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                              <td style={{ padding: '12px 8px', fontSize: '14px', color: '#111827' }}>
-                                Midterm {midterms.length > 1 ? index + 1 : 'Exam'}
-                              </td>
-                              <td style={{ padding: '12px 8px', fontSize: '14px', color: '#111827', textAlign: 'center', fontWeight: '600' }}>
-                                {item.obtained_marks}
-                              </td>
-                              <td style={{ padding: '12px 8px', fontSize: '14px', color: '#111827', textAlign: 'center' }}>
-                                {item.max_marks}
-                              </td>
-                              <td style={{ padding: '12px 8px', fontSize: '14px', color: '#111827', textAlign: 'center', fontWeight: '600' }}>
-                                {percentage.toFixed(1)}%
-                              </td>
+                              <td className="td-d">Midterm {midterms.length > 1 ? index + 1 : 'Exam'}</td>
+                              <td className="td-d td-d-center font-semibold">{item.obtained_marks}</td>
+                              <td className="td-d td-d-center">{item.max_marks}</td>
+                              <td className="td-d td-d-center font-semibold">{percentage.toFixed(1)}%</td>
                             </tr>
                           );
                         })}
-                        {/* Category Total for Midterms */}
                         {midterms.length > 0 && (
-                          <tr style={{ borderBottom: '1px solid #e5e7eb', background: '#f9fafb' }}>
-                            <td style={{ padding: '10px 8px', fontSize: '13px', color: '#6b7280', fontWeight: '600' }}>
-                              Midterm Total
-                            </td>
-                            <td style={{ padding: '10px 8px', fontSize: '13px', color: '#111827', textAlign: 'center', fontWeight: '700' }}>
-                              {midtermTotal.obtained}
-                            </td>
-                            <td style={{ padding: '10px 8px', fontSize: '13px', color: '#111827', textAlign: 'center', fontWeight: '700' }}>
-                              {midtermTotal.max}
-                            </td>
-                            <td style={{ padding: '10px 8px', fontSize: '13px', color: '#111827', textAlign: 'center', fontWeight: '700' }}>
-                              {midtermTotal.percentage.toFixed(1)}%
-                            </td>
+                          <tr className="td-d-subtotal">
+                            <td className="font-semibold text-muted" style={{ padding: '10px 8px', fontSize: '13px' }}>Midterm Total</td>
+                            <td className="td-d-center font-bold" style={{ padding: '10px 8px', fontSize: '13px', color: '#111827' }}>{midtermTotal.obtained}</td>
+                            <td className="td-d-center font-bold" style={{ padding: '10px 8px', fontSize: '13px', color: '#111827' }}>{midtermTotal.max}</td>
+                            <td className="td-d-center font-bold" style={{ padding: '10px 8px', fontSize: '13px', color: '#111827' }}>{midtermTotal.percentage.toFixed(1)}%</td>
                           </tr>
                         )}
 
@@ -561,64 +432,47 @@ export default function StudentPage() {
                           const percentage = (item.obtained_marks / item.max_marks) * 100;
                           return (
                             <tr key={item.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                              <td style={{ padding: '12px 8px', fontSize: '14px', color: '#111827' }}>
-                                Final {finals.length > 1 ? index + 1 : 'Exam'}
-                              </td>
-                              <td style={{ padding: '12px 8px', fontSize: '14px', color: '#111827', textAlign: 'center', fontWeight: '600' }}>
-                                {item.obtained_marks}
-                              </td>
-                              <td style={{ padding: '12px 8px', fontSize: '14px', color: '#111827', textAlign: 'center' }}>
-                                {item.max_marks}
-                              </td>
-                              <td style={{ padding: '12px 8px', fontSize: '14px', color: '#111827', textAlign: 'center', fontWeight: '600' }}>
-                                {percentage.toFixed(1)}%
-                              </td>
+                              <td className="td-d">Final {finals.length > 1 ? index + 1 : 'Exam'}</td>
+                              <td className="td-d td-d-center font-semibold">{item.obtained_marks}</td>
+                              <td className="td-d td-d-center">{item.max_marks}</td>
+                              <td className="td-d td-d-center font-semibold">{percentage.toFixed(1)}%</td>
                             </tr>
                           );
                         })}
-                        {/* Category Total for Finals */}
                         {finals.length > 0 && (
-                          <tr style={{ borderBottom: '1px solid #e5e7eb', background: '#f9fafb' }}>
-                            <td style={{ padding: '10px 8px', fontSize: '13px', color: '#6b7280', fontWeight: '600' }}>
-                              Final Total
-                            </td>
-                            <td style={{ padding: '10px 8px', fontSize: '13px', color: '#111827', textAlign: 'center', fontWeight: '700' }}>
-                              {finalTotal.obtained}
-                            </td>
-                            <td style={{ padding: '10px 8px', fontSize: '13px', color: '#111827', textAlign: 'center', fontWeight: '700' }}>
-                              {finalTotal.max}
-                            </td>
-                            <td style={{ padding: '10px 8px', fontSize: '13px', color: '#111827', textAlign: 'center', fontWeight: '700' }}>
-                              {finalTotal.percentage.toFixed(1)}%
-                            </td>
+                          <tr className="td-d-subtotal">
+                            <td className="font-semibold text-muted" style={{ padding: '10px 8px', fontSize: '13px' }}>Final Total</td>
+                            <td className="td-d-center font-bold" style={{ padding: '10px 8px', fontSize: '13px', color: '#111827' }}>{finalTotal.obtained}</td>
+                            <td className="td-d-center font-bold" style={{ padding: '10px 8px', fontSize: '13px', color: '#111827' }}>{finalTotal.max}</td>
+                            <td className="td-d-center font-bold" style={{ padding: '10px 8px', fontSize: '13px', color: '#111827' }}>{finalTotal.percentage.toFixed(1)}%</td>
                           </tr>
                         )}
                       </tbody>
                     </table>
 
                     {/* Summary */}
-                    <div style={{ padding: '16px', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                    <div className="summary-box">
                       <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 8px' }}>Course Summary</p>
                       <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                         <div>
-                          <span style={{ fontSize: '12px', color: '#6b7280' }}>Total Assessments: </span>
+                          <span className="text-sm text-muted">Total Assessments: </span>
                           <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{courseGradeItems.length}</span>
                         </div>
                         <div>
-                          <span style={{ fontSize: '12px', color: '#6b7280' }}>Total Points: </span>
+                          <span className="text-sm text-muted">Total Points: </span>
                           <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>
                             {courseGradeItems.reduce((sum, item) => sum + item.obtained_marks, 0)}/
                             {courseGradeItems.reduce((sum, item) => sum + item.max_marks, 0)}
                           </span>
                         </div>
                         <div>
-                          <span style={{ fontSize: '12px', color: '#6b7280' }}>Credits: </span>
+                          <span className="text-sm text-muted">Credits: </span>
                           <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>
                             {selectedEnrollment.course?.credit_hours || 0} hrs
                           </span>
                         </div>
                         <div>
-                          <span style={{ fontSize: '12px', color: '#6b7280' }}>Status: </span>
+                          <span className="text-sm text-muted">Status: </span>
                           <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>
                             {selectedEnrollment.status.charAt(0).toUpperCase() + selectedEnrollment.status.slice(1)}
                           </span>
@@ -634,54 +488,25 @@ export default function StudentPage() {
 
         {/* Enrollment Request Modal */}
         {showEnrollModal && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000
-          }}>
-            <div style={{
-              background: 'white',
-              borderRadius: '12px',
-              padding: '24px',
-              maxWidth: '600px',
-              width: '90%',
-              maxHeight: '80vh',
-              overflow: 'auto'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#111827', margin: 0 }}>
-                  Request Course Enrollment
-                </h2>
-                <button
-                  onClick={() => setShowEnrollModal(false)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: '4px'
-                  }}
-                >
+          <div className="modal-overlay">
+            <div className="modal-box-lg">
+              <div className="modal-header-row">
+                <h2 className="page-title">Request Course Enrollment</h2>
+                <button className="btn-close" onClick={() => setShowEnrollModal(false)}>
                   <X size={24} color="#6b7280" />
                 </button>
               </div>
 
-              <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '20px' }}>
+              <p className="text-sm text-muted" style={{ marginBottom: '20px' }}>
                 Select a course to request enrollment. Your request will be sent to the admin for approval.
               </p>
 
               {(() => {
                 const availableCourses = getAvailableCourses();
-                
+
                 if (availableCourses.length === 0) {
                   return (
-                    <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                    <div className="select-placeholder-box">
                       <BookOpen size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
                       <p style={{ margin: 0 }}>No available courses to enroll in.</p>
                     </div>
@@ -689,44 +514,25 @@ export default function StudentPage() {
                 }
 
                 return (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div className="course-request-list">
                     {availableCourses.map((course) => (
-                      <div
-                        key={course.id}
-                        style={{
-                          padding: '16px',
-                          border: '1px solid #e5e7eb',
-                          borderRadius: '8px',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center'
-                        }}
-                      >
+                      <div key={course.id} className="course-request-item">
                         <div>
                           <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#111827', margin: '0 0 4px' }}>
                             {course.title}
                           </h3>
-                          <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>
+                          <p className="text-sm text-muted" style={{ margin: 0 }}>
                             {course.credit_hours} credits • {course.teacher?.user?.name || 'No teacher assigned'}
                           </p>
                         </div>
                         <button
+                          className="btn-request"
                           onClick={() => {
                             handleRequestEnrollment(course.id);
                             setShowEnrollModal(false);
                           }}
                           disabled={requesting}
-                          style={{
-                            padding: '8px 16px',
-                            background: '#3b82f6',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            fontSize: '13px',
-                            fontWeight: '600',
-                            cursor: requesting ? 'not-allowed' : 'pointer',
-                            opacity: requesting ? 0.5 : 1
-                          }}
+                          style={{ opacity: requesting ? 0.5 : 1, cursor: requesting ? 'not-allowed' : 'pointer' }}
                         >
                           {requesting ? 'Requesting...' : 'Request'}
                         </button>

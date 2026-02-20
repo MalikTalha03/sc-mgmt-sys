@@ -25,7 +25,7 @@ export function DepartmentForm({ onSubmit }: DepartmentFormProps) {
   return (
     <Card>
       <CardHeader>Add New Department</CardHeader>
-      <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
+      <form onSubmit={handleSubmit} className="p-24">
         <div className="form-input-wrapper">
           <label className="form-input-label">
             Department Code

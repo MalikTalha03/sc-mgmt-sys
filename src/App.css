@@ -1056,3 +1056,736 @@ select.form-input {
   background: #f3f4f6;
   color: #6b7280;
 }
+
+/* Main Layout */
+.main-content {
+  margin-left: 260px;
+  min-height: 100vh;
+  background: #f3f4f6;
+}
+
+/* Sidebar Specific */
+.sidebar-container {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 260px;
+  background: white;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+}
+
+.sidebar-header {
+  padding: 20px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar-logo-icon {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.sidebar-logo-text {
+  font-weight: 700;
+  font-size: 18px;
+  color: #1f2937;
+}
+
+.sidebar-user-info {
+  padding: 16px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sidebar-user-role {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 4px;
+}
+
+.sidebar-user-email {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-role-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.sidebar-role-admin {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.sidebar-role-teacher {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.sidebar-role-student {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 16px 12px;
+  overflow-y: auto;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  color: #6b7280;
+  transition: all 0.2s;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.sidebar-nav-item:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.sidebar-nav-item-active {
+  background: #111827;
+  color: white;
+}
+
+.sidebar-nav-item span {
+  flex: 1;
+}
+
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.sidebar-logout-button {
+  width: 100%;
+  padding: 12px 16px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+.sidebar-logout-button:hover {
+  background: #b91c1c;
+}
+
+/* Page Content Wrapper */
+.page-content {
+  padding: 32px;
+}
+
+.page-content-header {
+  margin-bottom: 24px;
+}
+
+/* Student & Teacher Dashboard Specific */
+.dashboard-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* Course List */
+.course-list-header {
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.course-list-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.course-list-empty {
+  text-align: center;
+  padding: 60px;
+  color: #6b7280;
+}
+
+.course-list-empty-icon {
+  margin: 0 auto 12px;
+  opacity: 0.5;
+}
+
+.course-list-empty-text {
+  margin: 0;
+}
+
+.course-list-item {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.course-list-item-title {
+  font-weight: 500;
+  color: #111827;
+}
+
+.course-list-item-meta {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* Grade Details Modal */
+.grade-details-summary {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.grade-details-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.grade-details-summary-label {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0 0 4px;
+}
+
+.grade-details-summary-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.grade-details-summary-right {
+  text-align: right;
+}
+
+/* Tables */
+.grade-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.grade-table thead tr {
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.grade-table th {
+  padding: 12px 8px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+.grade-table th-center {
+  text-align: center;
+}
+
+.grade-table tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.grade-table tbody tr.summary-row {
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.grade-table td {
+  padding: 12px 8px;
+  font-size: 14px;
+  color: #111827;
+}
+
+.grade-table td-center {
+  text-align: center;
+}
+
+.grade-table td-bold {
+  font-weight: 600;
+}
+
+.grade-table td-summary {
+  padding: 10px 8px;
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.grade-table td-summary-value {
+  color: #111827;
+  font-weight: 700;
+}
+
+/* Admin Search Bar */
+.admin-search-container {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.admin-search-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.admin-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #374151;
+  background: transparent;
+  width: 100%;
+}
+
+/* Teacher Grades Specific */
+.grade-entry-form {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.grade-entry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.grade-entry-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.grade-entry-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: white;
+}
+
+.grade-entry-hint {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 6px 0 0;
+}
+
+.grade-entry-warning {
+  padding: 16px;
+  background: #fef3c7;
+  color: #92400e;
+  border-radius: 6px;
+  border-left: 4px solid #f59e0b;
+}
+
+.grade-entry-warning-title {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.grade-entry-warning-text {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.grade-entry-table-wrapper {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.grade-entry-table-header {
+  padding: 16px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.grade-entry-table-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.grade-entry-student-name {
+  color: #111827;
+  font-weight: 600;
+}
+
+.grade-entry-student-email {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.grade-entry-current-grades {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.grade-entry-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.grade-entry-badge-current {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9333ea;
+}
+
+.grade-entry-input {
+  width: 100%;
+  padding: 8px;
+  border: 2px solid #d1d5db;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.grade-entry-input:focus {
+  outline: none;
+  border-color: #9333ea;
+}
+
+.grade-entry-input:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.grade-entry-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Overview Table */
+.overview-table-wrapper {
+  overflow-x: auto;
+}
+
+.overview-grade-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.overview-grade-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.overview-student-info {
+  font-weight: 600;
+  color: #111827;
+}
+
+.overview-student-email {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.overview-average {
+  font-weight: 700;
+  font-size: 16px;
+  color: #111827;
+}
+
+.overview-grade {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 16px;
+  color: white;
+}
+
+.overview-grade-a {
+  background: #10b981;
+}
+
+.overview-grade-b {
+  background: #3b82f6;
+}
+
+.overview-grade-c {
+  background: #f59e0b;
+}
+
+.overview-grade-d {
+  background: #f97316;
+}
+
+.overview-grade-f {
+  background: #ef4444;
+}
+
+/* Utility Text Classes */
+.text-muted {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.text-bold {
+  font-weight: 600;
+}
+
+.text-strong {
+  font-weight: 700;
+}
+
+/* Flex utilities */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-gap-4 {
+  gap: 4px;
+}
+
+.flex-gap-8 {
+  gap: 8px;
+}
+
+.flex-gap-12 {
+  gap: 12px;
+}
+
+.flex-gap-16 {
+  gap: 16px;
+}
+
+.flex-gap-20 {
+  gap: 20px;
+}
+
+/* Padding utilities */
+.p-16 {
+  padding: 16px;
+}
+
+.p-20 {
+  padding: 20px;
+}
+
+.p-24 {
+  padding: 24px;
+}
+
+.p-32 {
+  padding: 32px;
+}
+
+.p-40 {
+  padding: 40px;
+}
+
+.p-60 {
+  padding: 60px;
+}
+
+.px-16 {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.py-12 {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+/* Margin utilities */
+.m-0 {
+  margin: 0;
+}
+
+.mb-4 {
+  margin-bottom: 4px;
+}
+
+.mb-8 {
+  margin-bottom: 8px;
+}
+
+.mb-12 {
+  margin-bottom: 12px;
+}
+
+.mb-16 {
+  margin-bottom: 16px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.mb-24 {
+  margin-bottom: 24px;
+}
+
+.mt-4 {
+  margin-top: 4px;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+/* Border utilities */
+.border-b {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.border-b-2 {
+  border-bottom: 2px solid #e5e7eb;
+}
+
+/* Background utilities */
+.bg-white {
+  background: white;
+}
+
+.bg-gray-50 {
+  background: #f9fafb;
+}
+
+/* Text utilities */
+.text-14 {
+  font-size: 14px;
+}
+
+.text-13 {
+  font-size: 13px;
+}
+
+.text-12 {
+  font-size: 12px;
+}
+
+.text-18 {
+  font-size: 18px;
+}
+
+.text-20 {
+  font-size: 20px;
+}
+
+.text-24 {
+  font-size: 24px;
+}
+
+.text-28 {
+  font-size: 28px;
+}
+
+.text-uppercase {
+  text-transform: uppercase;
+}
+
+/* Color utilities */
+.color-gray-600 {
+  color: #6b7280;
+}
+
+.color-gray-700 {
+  color: #374151;
+}
+
+.color-gray-900 {
+  color: #111827;
+}
+
+.color-blue-600 {
+  color: #3b82f6;
+}
+
+.color-purple-600 {
+  color: #9333ea;
+}

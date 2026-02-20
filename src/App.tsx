@@ -43,7 +43,7 @@ function AppContent() {
   return (
     <>
       <Sidebar />
-      <main style={{ marginLeft: '260px', minHeight: '100vh', background: '#f3f4f6' }}>
+      <main className="main-content">
         <Routes>
           <Route path="/login" element={<Navigate to="/" replace />} />
           <Route

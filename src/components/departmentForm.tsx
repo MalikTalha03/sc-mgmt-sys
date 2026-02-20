@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { Card, CardHeader } from "./card";
 import { Button } from "./button";
-import { FormInput } from "./formInput";
 import { Building2 } from "lucide-react";
 
 interface DepartmentFormProps {
   onSubmit: (data: {
     code: string;
     name: string;
-    isActive: boolean;
   }) => void;
 }
 
@@ -16,65 +14,56 @@ export function DepartmentForm({ onSubmit }: DepartmentFormProps) {
   const [formData, setFormData] = useState({
     code: "",
     name: "",
-    isActive: true,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
-    setFormData({ code: "", name: "", isActive: true });
+    setFormData({ code: "", name: "" });
   };
 
   return (
     <Card>
       <CardHeader>Add New Department</CardHeader>
       <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
-        <FormInput
-          label="Department Code"
-          type="text"
-          placeholder="e.g., CS, EE, ME"
-          value={formData.code}
-          onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-          required
-        />
-
-        <FormInput
-          label="Department Name"
-          type="text"
-          placeholder="e.g., Computer Science"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          required
-        />
-
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '8px',
-          marginBottom: '20px'
-        }}>
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151' }}>
+            Department Code
+          </label>
           <input
-            type="checkbox"
-            id="isActive"
-            checked={formData.isActive}
-            onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-            style={{ 
-              width: '18px', 
-              height: '18px',
-              accentColor: '#4f46e5',
-              cursor: 'pointer'
+            type="text"
+            placeholder="e.g., CS, EE, ME"
+            value={formData.code}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, code: e.target.value })}
+            required
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              border: '1px solid #d1d5db',
+              borderRadius: '6px',
+              fontSize: '14px'
             }}
           />
-          <label 
-            htmlFor="isActive" 
-            style={{ 
-              fontSize: '14px', 
-              color: '#374151',
-              cursor: 'pointer'
-            }}
-          >
-            Active Department
+        </div>
+
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#374151' }}>
+            Department Name
           </label>
+          <input
+            type="text"
+            placeholder="e.g., Computer Science"
+            value={formData.name}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, name: e.target.value })}
+            required
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              border: '1px solid #d1d5db',
+              borderRadius: '6px',
+              fontSize: '14px'
+            }}
+          />
         </div>
 
         <Button type="submit" fullWidth>

@@ -99,8 +99,33 @@ export default function StudentPage() {
     return gradeItems.filter(gi => gi.grade_id === grade.id);
   };
 
+  const MAX_CREDIT_HOURS = 21;
+
+  const getCurrentCreditHours = (): number => {
+    return enrollments
+      .filter(e => e.status === 'approved' || e.status === 'pending')
+      .reduce((sum, e) => sum + (e.course?.credit_hours ?? 0), 0);
+  };
+
   const handleRequestEnrollment = async (courseId: number) => {
     if (!student) return;
+
+    // Client-side credit hour guard
+    const course = courses.find(c => c.id === courseId);
+    if (course) {
+      const currentCredits = getCurrentCreditHours();
+      const maxCredits = student.max_credit_per_semester ?? MAX_CREDIT_HOURS;
+      if (currentCredits + course.credit_hours > maxCredits) {
+        const remaining = maxCredits - currentCredits;
+        alert(
+          `Cannot request enrollment: credit hour limit exceeded.\n\n` +
+          `Current load (approved + pending): ${currentCredits}/${maxCredits} credit hours\n` +
+          `This course: ${course.credit_hours} credit hours\n` +
+          `Remaining capacity: ${Math.max(remaining, 0)} credit hours`
+        );
+        return;
+      }
+    }
 
     try {
       setRequesting(true);
@@ -496,12 +521,38 @@ export default function StudentPage() {
                 </button>
               </div>
 
-              <p className="text-sm text-muted" style={{ marginBottom: '20px' }}>
+              <p className="text-sm text-muted" style={{ marginBottom: '12px' }}>
                 Select a course to request enrollment. Your request will be sent to the admin for approval.
               </p>
 
+              {/* Credit hour usage bar */}
+              {(() => {
+                const usedCredits = getCurrentCreditHours();
+                const maxCredits = student?.max_credit_per_semester ?? MAX_CREDIT_HOURS;
+                const pct = Math.min((usedCredits / maxCredits) * 100, 100);
+                const barColor = usedCredits >= maxCredits ? '#ef4444' : usedCredits >= maxCredits * 0.8 ? '#f59e0b' : '#6366f1';
+                return (
+                  <div className="credit-hours-bar-container" style={{ marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#374151', marginBottom: '6px' }}>
+                      <span>Credit hours used (approved + pending)</span>
+                      <span style={{ fontWeight: 600, color: barColor }}>{usedCredits} / {maxCredits}</span>
+                    </div>
+                    <div style={{ background: '#e5e7eb', borderRadius: '6px', height: '8px', overflow: 'hidden' }}>
+                      <div style={{ width: `${pct}%`, height: '100%', background: barColor, borderRadius: '6px', transition: 'width 0.3s' }} />
+                    </div>
+                    {usedCredits >= maxCredits && (
+                      <p style={{ fontSize: '12px', color: '#ef4444', margin: '6px 0 0', fontWeight: 500 }}>
+                        Credit limit reached. Drop a pending/approved enrollment to request more courses.
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
+
               {(() => {
                 const availableCourses = getAvailableCourses();
+                const usedCredits = getCurrentCreditHours();
+                const maxCredits = student?.max_credit_per_semester ?? MAX_CREDIT_HOURS;
 
                 if (availableCourses.length === 0) {
                   return (
@@ -514,29 +565,38 @@ export default function StudentPage() {
 
                 return (
                   <div className="course-request-list">
-                    {availableCourses.map((course) => (
-                      <div key={course.id} className="course-request-item">
-                        <div>
-                          <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#111827', margin: '0 0 4px' }}>
-                            {course.title}
-                          </h3>
-                          <p className="text-sm text-muted" style={{ margin: 0 }}>
-                            {course.credit_hours} credits • {course.teacher?.user?.name || 'No teacher assigned'}
-                          </p>
+                    {availableCourses.map((course) => {
+                      const wouldExceed = usedCredits + course.credit_hours > maxCredits;
+                      return (
+                        <div key={course.id} className="course-request-item" style={{ opacity: wouldExceed ? 0.6 : 1 }}>
+                          <div>
+                            <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#111827', margin: '0 0 4px' }}>
+                              {course.title}
+                            </h3>
+                            <p className="text-sm text-muted" style={{ margin: 0 }}>
+                              {course.credit_hours} credits • {course.teacher?.user?.name || 'No teacher assigned'}
+                              {wouldExceed && (
+                                <span style={{ color: '#ef4444', fontWeight: 500, marginLeft: '8px' }}>
+                                  — exceeds limit (+{course.credit_hours} would be {usedCredits + course.credit_hours}/{maxCredits})
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                          <button
+                            className="btn-request"
+                            onClick={() => {
+                              handleRequestEnrollment(course.id);
+                              setShowEnrollModal(false);
+                            }}
+                            disabled={requesting || wouldExceed}
+                            title={wouldExceed ? `Adding this course would exceed your ${maxCredits} credit hour limit` : undefined}
+                            style={{ opacity: requesting || wouldExceed ? 0.5 : 1, cursor: requesting || wouldExceed ? 'not-allowed' : 'pointer' }}
+                          >
+                            {requesting ? 'Requesting...' : wouldExceed ? 'Limit reached' : 'Request'}
+                          </button>
                         </div>
-                        <button
-                          className="btn-request"
-                          onClick={() => {
-                            handleRequestEnrollment(course.id);
-                            setShowEnrollModal(false);
-                          }}
-                          disabled={requesting}
-                          style={{ opacity: requesting ? 0.5 : 1, cursor: requesting ? 'not-allowed' : 'pointer' }}
-                        >
-                          {requesting ? 'Requesting...' : 'Request'}
-                        </button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 );
               })()}

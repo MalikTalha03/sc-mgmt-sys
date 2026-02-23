@@ -12,7 +12,8 @@ import {
   ChevronRight,
   Users,
   ClipboardList,
-  Lock
+  Lock,
+  Trophy
 } from "lucide-react";
 
 export function Sidebar() {
@@ -30,6 +31,7 @@ export function Sidebar() {
     { path: "/admin/departments", label: "Departments", icon: Building2, roles: ["admin"] },
     { path: "/admin/enrollments", label: "Enrollments", icon: ClipboardList, roles: ["admin"] },
     { path: "/student", label: "My Portal", icon: GraduationCap, roles: ["student"] },
+    { path: "/results", label: "My Results", icon: Trophy, roles: ["student"] },
     { path: "/teacher", label: "My Portal", icon: UserCircle, roles: ["teacher"] },
   ];
 

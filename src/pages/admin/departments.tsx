@@ -14,7 +14,7 @@ import {
 import { departmentService, type Department } from "../../services/department.service";
 import { useToast } from "../../context/ToastContext";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 9;
 
 export default function AdminDepartmentsPage() {
   const [departments, setDepartments] = useState<Department[]>([]);

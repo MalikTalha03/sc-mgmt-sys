@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { teacherService, type Teacher, type TeacherDesignation } from "../../services/teacher.service";
 import { departmentService, type Department } from "../../services/department.service";
-import { Loader2, Users, Search, Trash2, Plus, X } from "lucide-react";
+import { Loader2, Users, Search, Trash2, Plus, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../../components/button";
 import { useToast } from "../../context/ToastContext";
+
+const ITEMS_PER_PAGE = 9;
 
 export default function AdminTeachersPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -17,10 +19,15 @@ export default function AdminTeachersPage() {
     designation: "" as TeacherDesignation | ""
   });
   const toast = useToast();
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const loadData = async () => {
     try {
@@ -90,6 +97,8 @@ export default function AdminTeachersPage() {
   };
 
   const filteredTeachers = filterTeachers();
+  const totalPages = Math.ceil(filteredTeachers.length / ITEMS_PER_PAGE);
+  const paginate = (items: typeof filteredTeachers) => items.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   if (loading) {
     return (
@@ -142,6 +151,7 @@ export default function AdminTeachersPage() {
               <p style={{ margin: 0 }}>No teachers found</p>
             </div>
           ) : (
+            <>
             <table className="data-table">
               <thead>
                 <tr>
@@ -153,7 +163,7 @@ export default function AdminTeachersPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredTeachers.map((teacher) => (
+              {paginate(filteredTeachers).map((teacher) => (
                   <tr key={teacher.id}>
                     <td className="td">
                       <span style={{ fontWeight: '600', color: '#ec4899' }}>{teacher.id}</span>
@@ -184,6 +194,23 @@ export default function AdminTeachersPage() {
                 ))}
               </tbody>
             </table>
+            {filteredTeachers.length > 0 && (
+              <div className="pagination-bar">
+                <span className="pagination-info">
+                  {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, filteredTeachers.length)}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredTeachers.length)} of {filteredTeachers.length}
+                </span>
+                <div className="pagination-controls">
+                  <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                    <ChevronLeft size={16} />
+                  </button>
+                  <span className="pagination-label">Page {currentPage} / {totalPages || 1}</span>
+                  <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage >= totalPages}>
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
+            </>
           )}
         </div>
 

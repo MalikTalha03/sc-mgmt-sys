@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { studentService, type Student } from "../../services/student.service";
 import { departmentService, type Department } from "../../services/department.service";
-import { Loader2, GraduationCap, Search, Trash2, BookOpen, Plus, X } from "lucide-react";
+import { Loader2, GraduationCap, Search, Trash2, BookOpen, Plus, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../../components/button";
 import { useToast } from "../../context/ToastContext";
+
+const ITEMS_PER_PAGE = 9;
 
 export default function AdminStudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -16,10 +18,15 @@ export default function AdminStudentsPage() {
     department_id: ""
   });
   const toast = useToast();
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const loadData = async () => {
     try {
@@ -89,6 +96,8 @@ export default function AdminStudentsPage() {
   };
 
   const filteredStudents = filterStudents();
+  const totalPages = Math.ceil(filteredStudents.length / ITEMS_PER_PAGE);
+  const paginate = (items: typeof filteredStudents) => items.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   if (loading) {
     return (
@@ -141,6 +150,7 @@ export default function AdminStudentsPage() {
               <p style={{ margin: 0 }}>No students found</p>
             </div>
           ) : (
+            <>
             <table className="data-table">
               <thead>
                 <tr>
@@ -152,7 +162,7 @@ export default function AdminStudentsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredStudents.map((student) => (
+              {paginate(filteredStudents).map((student) => (
                   <tr key={student.id}>
                     <td className="td">
                       <span style={{ fontWeight: '600', color: '#9333ea' }}>{student.id}</span>
@@ -184,6 +194,23 @@ export default function AdminStudentsPage() {
                 ))}
               </tbody>
             </table>
+            {filteredStudents.length > 0 && (
+              <div className="pagination-bar">
+                <span className="pagination-info">
+                  {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, filteredStudents.length)}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredStudents.length)} of {filteredStudents.length}
+                </span>
+                <div className="pagination-controls">
+                  <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                    <ChevronLeft size={16} />
+                  </button>
+                  <span className="pagination-label">Page {currentPage} / {totalPages || 1}</span>
+                  <button className="pagination-btn" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage >= totalPages}>
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
+            </>
           )}
         </div>
 

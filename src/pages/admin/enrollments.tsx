@@ -11,9 +11,13 @@ import {
   Clock,
   Plus,
   Award,
-  Ban
+  Ban,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { useToast } from "../../context/ToastContext";
+
+const ITEMS_PER_PAGE = 9;
 
 export default function AdminEnrollmentsPage() {
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
@@ -28,10 +32,17 @@ export default function AdminEnrollmentsPage() {
   const [studentSearch, setStudentSearch] = useState("");
   const [courseSearch, setCourseSearch] = useState("");
   const toast = useToast();
+  const [pendingPage, setPendingPage] = useState(1);
+  const [approvedPage, setApprovedPage] = useState(1);
 
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    setPendingPage(1);
+    setApprovedPage(1);
+  }, [searchQuery, activeTab]);
 
   const loadData = async () => {
     try {
@@ -100,6 +111,7 @@ export default function AdminEnrollmentsPage() {
       toast.error(error.message || "Failed to drop enrollment");
     }
   };
+
 
 
 
@@ -178,6 +190,8 @@ export default function AdminEnrollmentsPage() {
 
   const filteredPending = filterEnrollments(pendingEnrollments);
   const filteredApproved = filterEnrollments(approvedEnrollments);
+  const pendingTotalPages = Math.ceil(filteredPending.length / ITEMS_PER_PAGE);
+  const approvedTotalPages = Math.ceil(filteredApproved.length / ITEMS_PER_PAGE);
 
   if (loading) {
     return (
@@ -253,6 +267,7 @@ export default function AdminEnrollmentsPage() {
                 <p className="text-sm text-muted" style={{ margin: 0 }}>Students haven't submitted any enrollment requests yet</p>
               </div>
             ) : (
+              <>
               <table className="data-table">
                 <thead>
                   <tr>
@@ -264,7 +279,7 @@ export default function AdminEnrollmentsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredPending.map((enrollment) => (
+                  {filteredPending.slice((pendingPage - 1) * ITEMS_PER_PAGE, pendingPage * ITEMS_PER_PAGE).map((enrollment) => (
                     <tr key={enrollment.id}>
                       <td className="td">
                         <span className="font-semibold" style={{ color: '#3b82f6' }}>{enrollment.id}</span>
@@ -315,6 +330,23 @@ export default function AdminEnrollmentsPage() {
                   ))}
                 </tbody>
               </table>
+              {filteredPending.length > 0 && (
+                <div className="pagination-bar">
+                  <span className="pagination-info">
+                    {Math.min((pendingPage - 1) * ITEMS_PER_PAGE + 1, filteredPending.length)}–{Math.min(pendingPage * ITEMS_PER_PAGE, filteredPending.length)} of {filteredPending.length}
+                  </span>
+                  <div className="pagination-controls">
+                    <button className="pagination-btn" onClick={() => setPendingPage(p => Math.max(1, p - 1))} disabled={pendingPage === 1}>
+                      <ChevronLeft size={16} />
+                    </button>
+                    <span className="pagination-label">Page {pendingPage} / {pendingTotalPages || 1}</span>
+                    <button className="pagination-btn" onClick={() => setPendingPage(p => Math.min(pendingTotalPages, p + 1))} disabled={pendingPage >= pendingTotalPages}>
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+              </>
             )}
           </div>
         )}
@@ -328,6 +360,7 @@ export default function AdminEnrollmentsPage() {
                 <p className="font-semibold" style={{ fontSize: '16px', margin: '0 0 8px' }}>No enrollments found</p>
               </div>
             ) : (
+              <>
               <table className="data-table">
                 <thead>
                   <tr>
@@ -339,7 +372,7 @@ export default function AdminEnrollmentsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredApproved.map((enrollment) => (
+                  {filteredApproved.slice((approvedPage - 1) * ITEMS_PER_PAGE, approvedPage * ITEMS_PER_PAGE).map((enrollment) => (
                     <tr key={enrollment.id}>
                       <td className="td">
                         <span className="font-semibold" style={{ color: '#3b82f6' }}>#{enrollment.id}</span>
@@ -369,17 +402,14 @@ export default function AdminEnrollmentsPage() {
                       <td className="td">
                         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                           {enrollment.status === 'approved' && (
-                            <>
-                            
-                              <button
-                                className="action-btn action-btn-drop"
-                                onClick={() => handleDrop(enrollment.id)}
-                                title="Drop student"
-                              >
-                                <Ban size={14} />
-                                Drop
-                              </button>
-                            </>
+                            <button
+                              className="action-btn action-btn-drop"
+                              onClick={() => handleDrop(enrollment.id)}
+                              title="Drop student"
+                            >
+                              <Ban size={14} />
+                              Drop
+                            </button>
                           )}
                         </div>
                       </td>
@@ -387,6 +417,23 @@ export default function AdminEnrollmentsPage() {
                   ))}
                 </tbody>
               </table>
+              {filteredApproved.length > 0 && (
+                <div className="pagination-bar">
+                  <span className="pagination-info">
+                    {Math.min((approvedPage - 1) * ITEMS_PER_PAGE + 1, filteredApproved.length)}–{Math.min(approvedPage * ITEMS_PER_PAGE, filteredApproved.length)} of {filteredApproved.length}
+                  </span>
+                  <div className="pagination-controls">
+                    <button className="pagination-btn" onClick={() => setApprovedPage(p => Math.max(1, p - 1))} disabled={approvedPage === 1}>
+                      <ChevronLeft size={16} />
+                    </button>
+                    <span className="pagination-label">Page {approvedPage} / {approvedTotalPages || 1}</span>
+                    <button className="pagination-btn" onClick={() => setApprovedPage(p => Math.min(approvedTotalPages, p + 1))} disabled={approvedPage >= approvedTotalPages}>
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+              </>
             )}
           </div>
         )}

@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import StudentPage from "./pages/student";
+import ResultsPage from "./pages/results";
 import TeacherPage from "./pages/teacher";
 import TeacherGradesPage from "./pages/teacherGrades";
 import LoginPage from "./pages/login";
@@ -60,6 +61,14 @@ function AppContent() {
             element={
               <ProtectedRoute allowedRoles={["student"]}>
                 <StudentPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/results"
+            element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <ResultsPage />
               </ProtectedRoute>
             }
           />

@@ -16,7 +16,7 @@ import { departmentService, type Department } from "../../services/department.se
 import { teacherService, type Teacher } from "../../services/teacher.service";
 import { useToast } from "../../context/ToastContext";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 9;
 
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);

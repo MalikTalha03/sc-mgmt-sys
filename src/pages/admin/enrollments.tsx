@@ -89,15 +89,6 @@ export default function AdminEnrollmentsPage() {
     }
   };
 
-  const handleComplete = async (id: number) => {
-    try {
-      await enrollmentService.complete(id);
-      toast.success("Enrollment marked as completed!");
-      loadData();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to complete enrollment");
-    }
-  };
 
   const handleDrop = async (id: number) => {
     if (!await toast.confirm("Are you sure you want to drop this student from the course?")) return;
@@ -379,19 +370,14 @@ export default function AdminEnrollmentsPage() {
                         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                           {enrollment.status === 'approved' && (
                             <>
-                              <button
-                                className="action-btn action-btn-complete"
-                                onClick={() => handleComplete(enrollment.id)}
-                                title="Mark as completed"
-                              >
-                                <Award size={14} />
-                              </button>
+                            
                               <button
                                 className="action-btn action-btn-drop"
                                 onClick={() => handleDrop(enrollment.id)}
                                 title="Drop student"
                               >
                                 <Ban size={14} />
+                                Drop
                               </button>
                             </>
                           )}

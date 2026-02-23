@@ -59,3 +59,43 @@ export function calculateStudentCGPA(grades: Array<{ marks: GradeMarks }>): numb
   
   return totalGPA / grades.length;
 }
+
+/**
+ * Calculate weighted total percentage from raw GradeItem records (backend data).
+ * Weightage: assignments 10%, quizzes 15%, midterm 25%, final 50%.
+ * Each category is first normalised to a 0-100 percentage then weighted.
+ */
+export function calculateTotalFromItems(
+  items: Array<{ category: string; obtained_marks: number; max_marks: number }>
+): number {
+  const assignments = items.filter(i => i.category === 'assignment');
+  const quizzes    = items.filter(i => i.category === 'quiz');
+  const midterm    = items.find(i => i.category === 'midterm');
+  const final      = items.find(i => i.category === 'final');
+
+  const pct = (obtained: number, max: number) => (max > 0 ? (obtained / max) * 100 : 0);
+
+  const assignmentPct = assignments.length > 0
+    ? pct(
+        assignments.reduce((s, i) => s + i.obtained_marks, 0),
+        assignments.reduce((s, i) => s + i.max_marks, 0)
+      )
+    : 0;
+
+  const quizPct = quizzes.length > 0
+    ? pct(
+        quizzes.reduce((s, i) => s + i.obtained_marks, 0),
+        quizzes.reduce((s, i) => s + i.max_marks, 0)
+      )
+    : 0;
+
+  const midPct   = midterm ? pct(midterm.obtained_marks, midterm.max_marks) : 0;
+  const finalPct = final   ? pct(final.obtained_marks,   final.max_marks)   : 0;
+
+  return (
+    assignmentPct * GRADE_WEIGHTAGE.assignments +
+    quizPct       * GRADE_WEIGHTAGE.quizzes +
+    midPct        * GRADE_WEIGHTAGE.mid +
+    finalPct      * GRADE_WEIGHTAGE.final
+  );
+}

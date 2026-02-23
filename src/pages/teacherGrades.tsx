@@ -5,6 +5,7 @@ import { teacherService } from "../services/teacher.service";
 import { courseService, type Course } from "../services/course.service";
 import { enrollmentService, type Enrollment } from "../services/enrollment.service";
 import { gradeService, type Grade, type GradeItem, type GradeCategory } from "../services/grade.service";
+import { calculateTotalFromItems } from "../utils/gradeCalculations";
 import { Loader2, ArrowLeft, Plus, Save, X, Users } from "lucide-react";
 
 export default function TeacherGradesPage() {
@@ -201,8 +202,7 @@ export default function TeacherGradesPage() {
   const calculateStudentAverage = (studentId: number): number => {
     const items = getGradeItemsForStudent(studentId);
     if (items.length === 0) return 0;
-    const total = items.reduce((sum, item) => sum + ((item.obtained_marks / item.max_marks) * 100), 0);
-    return total / items.length;
+    return calculateTotalFromItems(items);
   };
   if (loading) {
     return (

@@ -1,4 +1,4 @@
-import { API_ENDPOINTS, getAuthHeaders } from './api.config';
+import { API_ENDPOINTS, apiFetch } from './api.config';
 import type { Department } from './department.service';
 import type { User } from './student.service';
 
@@ -17,9 +17,7 @@ export interface Teacher {
 
 class TeacherService {
   async getAll(): Promise<Teacher[]> {
-    const response = await fetch(API_ENDPOINTS.TEACHERS, {
-      headers: getAuthHeaders(),
-    });
+    const response = await apiFetch(API_ENDPOINTS.TEACHERS);
 
     if (!response.ok) {
       throw new Error('Failed to fetch teachers');
@@ -29,9 +27,7 @@ class TeacherService {
   }
 
   async getById(id: number): Promise<Teacher> {
-    const response = await fetch(`${API_ENDPOINTS.TEACHERS}/${id}`, {
-      headers: getAuthHeaders(),
-    });
+    const response = await apiFetch(`${API_ENDPOINTS.TEACHERS}/${id}`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch teacher');
@@ -46,9 +42,8 @@ class TeacherService {
   }
 
   async create(data: Omit<Teacher, 'id' | 'created_at' | 'updated_at'>): Promise<Teacher> {
-    const response = await fetch(API_ENDPOINTS.TEACHERS, {
+    const response = await apiFetch(API_ENDPOINTS.TEACHERS, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ teacher: data }),
     });
 
@@ -61,9 +56,8 @@ class TeacherService {
   }
 
   async update(id: number, data: Partial<Teacher>): Promise<Teacher> {
-    const response = await fetch(`${API_ENDPOINTS.TEACHERS}/${id}`, {
+    const response = await apiFetch(`${API_ENDPOINTS.TEACHERS}/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ teacher: data }),
     });
 
@@ -76,9 +70,8 @@ class TeacherService {
   }
 
   async delete(id: number): Promise<void> {
-    const response = await fetch(`${API_ENDPOINTS.TEACHERS}/${id}`, {
+    const response = await apiFetch(`${API_ENDPOINTS.TEACHERS}/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {

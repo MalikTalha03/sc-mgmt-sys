@@ -38,3 +38,22 @@ export const getAuthHeaders = (): HeadersInit => {
     ...(token && { 'Authorization': `Bearer ${token}` }),
   };
 };
+
+// Central fetch wrapper — redirects to /login on 401
+export const apiFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...getAuthHeaders(),
+      ...(options.headers as Record<string, string>),
+    },
+  });
+
+  if (response.status === 401) {
+    removeAuthToken();
+    window.location.href = '/login';
+    throw new Error('Session expired. Please log in again.');
+  }
+
+  return response;
+};

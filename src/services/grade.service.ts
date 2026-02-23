@@ -1,4 +1,4 @@
-import { API_ENDPOINTS, getAuthHeaders } from './api.config';
+import { API_ENDPOINTS, apiFetch } from './api.config';
 
 export type GradeCategory = 'assignment' | 'quiz' | 'midterm' | 'final';
 
@@ -22,9 +22,7 @@ export interface GradeItem {
 
 class GradeService {
   async getAll(): Promise<Grade[]> {
-    const response = await fetch(API_ENDPOINTS.GRADES, {
-      headers: getAuthHeaders(),
-    });
+    const response = await apiFetch(API_ENDPOINTS.GRADES);
 
     if (!response.ok) {
       throw new Error('Failed to fetch grades');
@@ -34,9 +32,7 @@ class GradeService {
   }
 
   async getById(id: number): Promise<Grade> {
-    const response = await fetch(`${API_ENDPOINTS.GRADES}/${id}`, {
-      headers: getAuthHeaders(),
-    });
+    const response = await apiFetch(`${API_ENDPOINTS.GRADES}/${id}`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch grade');
@@ -46,9 +42,8 @@ class GradeService {
   }
 
   async create(data: Omit<Grade, 'id' | 'created_at' | 'updated_at'>): Promise<Grade> {
-    const response = await fetch(API_ENDPOINTS.GRADES, {
+    const response = await apiFetch(API_ENDPOINTS.GRADES, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ grade: data }),
     });
 
@@ -61,9 +56,8 @@ class GradeService {
   }
 
   async delete(id: number): Promise<void> {
-    const response = await fetch(`${API_ENDPOINTS.GRADES}/${id}`, {
+    const response = await apiFetch(`${API_ENDPOINTS.GRADES}/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -74,9 +68,7 @@ class GradeService {
 
   // Grade Items
   async getAllGradeItems(): Promise<GradeItem[]> {
-    const response = await fetch(API_ENDPOINTS.GRADE_ITEMS, {
-      headers: getAuthHeaders(),
-    });
+    const response = await apiFetch(API_ENDPOINTS.GRADE_ITEMS);
 
     if (!response.ok) {
       throw new Error('Failed to fetch grade items');
@@ -86,9 +78,7 @@ class GradeService {
   }
 
   async getGradeItemById(id: number): Promise<GradeItem> {
-    const response = await fetch(`${API_ENDPOINTS.GRADE_ITEMS}/${id}`, {
-      headers: getAuthHeaders(),
-    });
+    const response = await apiFetch(`${API_ENDPOINTS.GRADE_ITEMS}/${id}`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch grade item');
@@ -98,9 +88,8 @@ class GradeService {
   }
 
   async createGradeItem(data: Omit<GradeItem, 'id' | 'created_at' | 'updated_at'>): Promise<GradeItem> {
-    const response = await fetch(API_ENDPOINTS.GRADE_ITEMS, {
+    const response = await apiFetch(API_ENDPOINTS.GRADE_ITEMS, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ grade_item: data }),
     });
 
@@ -113,9 +102,8 @@ class GradeService {
   }
 
   async updateGradeItem(id: number, data: Partial<GradeItem>): Promise<GradeItem> {
-    const response = await fetch(`${API_ENDPOINTS.GRADE_ITEMS}/${id}`, {
+    const response = await apiFetch(`${API_ENDPOINTS.GRADE_ITEMS}/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ grade_item: data }),
     });
 
@@ -128,9 +116,8 @@ class GradeService {
   }
 
   async deleteGradeItem(id: number): Promise<void> {
-    const response = await fetch(`${API_ENDPOINTS.GRADE_ITEMS}/${id}`, {
+    const response = await apiFetch(`${API_ENDPOINTS.GRADE_ITEMS}/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {

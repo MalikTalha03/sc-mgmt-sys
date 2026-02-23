@@ -1,4 +1,4 @@
-import { API_ENDPOINTS, getAuthHeaders } from './api.config';
+import { API_ENDPOINTS, apiFetch } from './api.config';
 
 export interface Department {
   id: number;
@@ -14,9 +14,7 @@ export interface Department {
 
 class DepartmentService {
   async getAll(): Promise<Department[]> {
-    const response = await fetch(API_ENDPOINTS.DEPARTMENTS, {
-      headers: getAuthHeaders(),
-    });
+    const response = await apiFetch(API_ENDPOINTS.DEPARTMENTS);
 
     if (!response.ok) {
       throw new Error('Failed to fetch departments');
@@ -26,9 +24,7 @@ class DepartmentService {
   }
 
   async getById(id: number): Promise<Department> {
-    const response = await fetch(`${API_ENDPOINTS.DEPARTMENTS}/${id}`, {
-      headers: getAuthHeaders(),
-    });
+    const response = await apiFetch(`${API_ENDPOINTS.DEPARTMENTS}/${id}`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch department');
@@ -38,9 +34,8 @@ class DepartmentService {
   }
 
   async create(data: Omit<Department, 'id' | 'created_at' | 'updated_at'>): Promise<Department> {
-    const response = await fetch(API_ENDPOINTS.DEPARTMENTS, {
+    const response = await apiFetch(API_ENDPOINTS.DEPARTMENTS, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ department: data }),
     });
 
@@ -53,9 +48,8 @@ class DepartmentService {
   }
 
   async update(id: number, data: Partial<Department>): Promise<Department> {
-    const response = await fetch(`${API_ENDPOINTS.DEPARTMENTS}/${id}`, {
+    const response = await apiFetch(`${API_ENDPOINTS.DEPARTMENTS}/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ department: data }),
     });
 
@@ -68,9 +62,8 @@ class DepartmentService {
   }
 
   async delete(id: number): Promise<void> {
-    const response = await fetch(`${API_ENDPOINTS.DEPARTMENTS}/${id}`, {
+    const response = await apiFetch(`${API_ENDPOINTS.DEPARTMENTS}/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {

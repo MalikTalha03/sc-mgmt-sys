@@ -1,4 +1,4 @@
-import { API_ENDPOINTS, getAuthHeaders } from './api.config';
+import { API_ENDPOINTS, apiFetch } from './api.config';
 import type { Department } from './department.service';
 import type { Teacher } from './teacher.service';
 
@@ -16,9 +16,7 @@ export interface Course {
 
 class CourseService {
   async getAll(): Promise<Course[]> {
-    const response = await fetch(API_ENDPOINTS.COURSES, {
-      headers: getAuthHeaders(),
-    });
+    const response = await apiFetch(API_ENDPOINTS.COURSES);
 
     if (!response.ok) {
       throw new Error('Failed to fetch courses');
@@ -28,9 +26,7 @@ class CourseService {
   }
 
   async getById(id: number): Promise<Course> {
-    const response = await fetch(`${API_ENDPOINTS.COURSES}/${id}`, {
-      headers: getAuthHeaders(),
-    });
+    const response = await apiFetch(`${API_ENDPOINTS.COURSES}/${id}`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch course');
@@ -40,9 +36,8 @@ class CourseService {
   }
 
   async create(data: Omit<Course, 'id' | 'created_at' | 'updated_at'>): Promise<Course> {
-    const response = await fetch(API_ENDPOINTS.COURSES, {
+    const response = await apiFetch(API_ENDPOINTS.COURSES, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ course: data }),
     });
 
@@ -55,9 +50,8 @@ class CourseService {
   }
 
   async update(id: number, data: Partial<Course>): Promise<Course> {
-    const response = await fetch(`${API_ENDPOINTS.COURSES}/${id}`, {
+    const response = await apiFetch(`${API_ENDPOINTS.COURSES}/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ course: data }),
     });
 
@@ -70,9 +64,8 @@ class CourseService {
   }
 
   async delete(id: number): Promise<void> {
-    const response = await fetch(`${API_ENDPOINTS.COURSES}/${id}`, {
+    const response = await apiFetch(`${API_ENDPOINTS.COURSES}/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {

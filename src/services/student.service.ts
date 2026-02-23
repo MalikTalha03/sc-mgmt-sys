@@ -1,4 +1,4 @@
-import { API_ENDPOINTS, getAuthHeaders } from './api.config';
+import { API_ENDPOINTS, apiFetch } from './api.config';
 import type { Department } from './department.service';
 
 export interface User {
@@ -23,9 +23,7 @@ export interface Student {
 
 class StudentService {
   async getAll(): Promise<Student[]> {
-    const response = await fetch(API_ENDPOINTS.STUDENTS, {
-      headers: getAuthHeaders(),
-    });
+    const response = await apiFetch(API_ENDPOINTS.STUDENTS);
 
     if (!response.ok) {
       throw new Error('Failed to fetch students');
@@ -35,9 +33,7 @@ class StudentService {
   }
 
   async getById(id: number): Promise<Student> {
-    const response = await fetch(`${API_ENDPOINTS.STUDENTS}/${id}`, {
-      headers: getAuthHeaders(),
-    });
+    const response = await apiFetch(`${API_ENDPOINTS.STUDENTS}/${id}`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch student');
@@ -52,9 +48,8 @@ class StudentService {
   }
 
   async create(data: Omit<Student, 'id' | 'created_at' | 'updated_at'>): Promise<Student> {
-    const response = await fetch(API_ENDPOINTS.STUDENTS, {
+    const response = await apiFetch(API_ENDPOINTS.STUDENTS, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ student: data }),
     });
 
@@ -67,9 +62,8 @@ class StudentService {
   }
 
   async update(id: number, data: Partial<Student>): Promise<Student> {
-    const response = await fetch(`${API_ENDPOINTS.STUDENTS}/${id}`, {
+    const response = await apiFetch(`${API_ENDPOINTS.STUDENTS}/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ student: data }),
     });
 
@@ -82,9 +76,8 @@ class StudentService {
   }
 
   async delete(id: number): Promise<void> {
-    const response = await fetch(`${API_ENDPOINTS.STUDENTS}/${id}`, {
+    const response = await apiFetch(`${API_ENDPOINTS.STUDENTS}/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -94,9 +87,8 @@ class StudentService {
   }
 
   async promoteSemester(id: number): Promise<Student> {
-    const response = await fetch(`${API_ENDPOINTS.STUDENTS}/${id}/promote_semester`, {
+    const response = await apiFetch(`${API_ENDPOINTS.STUDENTS}/${id}/promote_semester`, {
       method: 'PATCH',
-      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {

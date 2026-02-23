@@ -1,4 +1,4 @@
-import { API_ENDPOINTS, getAuthHeaders } from './api.config';
+import { API_ENDPOINTS, apiFetch } from './api.config';
 import type { Student } from './student.service';
 import type { Course } from './course.service';
 
@@ -17,9 +17,7 @@ export interface Enrollment {
 
 class EnrollmentService {
   async getAll(): Promise<Enrollment[]> {
-    const response = await fetch(API_ENDPOINTS.ENROLLMENTS, {
-      headers: getAuthHeaders(),
-    });
+    const response = await apiFetch(API_ENDPOINTS.ENROLLMENTS);
 
     if (!response.ok) {
       throw new Error('Failed to fetch enrollments');
@@ -29,9 +27,7 @@ class EnrollmentService {
   }
 
   async getById(id: number): Promise<Enrollment> {
-    const response = await fetch(`${API_ENDPOINTS.ENROLLMENTS}/${id}`, {
-      headers: getAuthHeaders(),
-    });
+    const response = await apiFetch(`${API_ENDPOINTS.ENROLLMENTS}/${id}`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch enrollment');
@@ -42,9 +38,8 @@ class EnrollmentService {
 
   // Student requests enrollment (creates pending enrollment)
   async requestEnrollment(courseId: number): Promise<Enrollment> {
-    const response = await fetch(`${API_ENDPOINTS.ENROLLMENTS}/request_enrollment`, {
+    const response = await apiFetch(`${API_ENDPOINTS.ENROLLMENTS}/request_enrollment`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ course_id: courseId }),
     });
 
@@ -58,9 +53,8 @@ class EnrollmentService {
 
   // Admin creates enrollment directly (approved status)
   async create(data: Omit<Enrollment, 'id' | 'created_at' | 'updated_at'>): Promise<Enrollment> {
-    const response = await fetch(API_ENDPOINTS.ENROLLMENTS, {
+    const response = await apiFetch(API_ENDPOINTS.ENROLLMENTS, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ enrollment: data }),
     });
 
@@ -74,9 +68,8 @@ class EnrollmentService {
 
   // Admin approves pending enrollment
   async approve(id: number): Promise<Enrollment> {
-    const response = await fetch(`${API_ENDPOINTS.ENROLLMENTS}/${id}/approve`, {
+    const response = await apiFetch(`${API_ENDPOINTS.ENROLLMENTS}/${id}/approve`, {
       method: 'PATCH',
-      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -89,9 +82,8 @@ class EnrollmentService {
 
   // Admin rejects pending enrollment
   async reject(id: number): Promise<Enrollment> {
-    const response = await fetch(`${API_ENDPOINTS.ENROLLMENTS}/${id}/reject`, {
+    const response = await apiFetch(`${API_ENDPOINTS.ENROLLMENTS}/${id}/reject`, {
       method: 'PATCH',
-      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -104,9 +96,8 @@ class EnrollmentService {
 
   // Admin marks enrollment as completed
   async complete(id: number): Promise<Enrollment> {
-    const response = await fetch(`${API_ENDPOINTS.ENROLLMENTS}/${id}/complete`, {
+    const response = await apiFetch(`${API_ENDPOINTS.ENROLLMENTS}/${id}/complete`, {
       method: 'PATCH',
-      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -119,9 +110,8 @@ class EnrollmentService {
 
   // Admin drops student from course
   async drop(id: number): Promise<Enrollment> {
-    const response = await fetch(`${API_ENDPOINTS.ENROLLMENTS}/${id}/drop`, {
+    const response = await apiFetch(`${API_ENDPOINTS.ENROLLMENTS}/${id}/drop`, {
       method: 'PATCH',
-      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -134,9 +124,8 @@ class EnrollmentService {
 
   // Student withdraws from enrollment
   async withdraw(id: number): Promise<Enrollment> {
-    const response = await fetch(`${API_ENDPOINTS.ENROLLMENTS}/${id}/withdraw`, {
+    const response = await apiFetch(`${API_ENDPOINTS.ENROLLMENTS}/${id}/withdraw`, {
       method: 'PATCH',
-      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -148,9 +137,8 @@ class EnrollmentService {
   }
 
   async update(id: number, data: Partial<Enrollment>): Promise<Enrollment> {
-    const response = await fetch(`${API_ENDPOINTS.ENROLLMENTS}/${id}`, {
+    const response = await apiFetch(`${API_ENDPOINTS.ENROLLMENTS}/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ enrollment: data }),
     });
 
@@ -163,9 +151,8 @@ class EnrollmentService {
   }
 
   async delete(id: number): Promise<void> {
-    const response = await fetch(`${API_ENDPOINTS.ENROLLMENTS}/${id}`, {
+    const response = await apiFetch(`${API_ENDPOINTS.ENROLLMENTS}/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {

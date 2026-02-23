@@ -358,7 +358,7 @@ export default function TeacherGradesPage() {
                                       </span>
                                     ))}
                                   </div>
-                                  <span className="avg-purple">Avg: {average.toFixed(1)}/100</span>
+                                  <span className="avg-purple">Avg: {average.toFixed(0)}/100</span>
                                 </>
                               )}
                             </div>

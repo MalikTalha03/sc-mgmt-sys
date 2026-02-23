@@ -78,9 +78,13 @@ export default function StudentPage() {
 
   const getLetterGrade = (percentage: number): string => {
     if (percentage >= 85) return 'A';
+    if (percentage >= 80) return 'A-';
     if (percentage >= 75) return 'B';
+    if (percentage >= 70) return 'B-';
     if (percentage >= 65) return 'C';
-    if (percentage >= 50) return 'D';
+    if (percentage >= 60) return 'C-';
+    if (percentage >= 55) return 'D';
+    if (percentage >= 50) return 'D-';
     return 'F';
   };
 
@@ -336,7 +340,7 @@ export default function StudentPage() {
                         <div>
                           <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 4px' }}>Overall Performance</p>
                           <p style={{ fontSize: '28px', fontWeight: '700', color: '#111827', margin: 0 }}>
-                            {gradeTotal?.toFixed(1)}%
+                            {gradeTotal?.toFixed(0)}<span style={{ fontSize: '16px', color: '#6b7280', fontWeight: '500' }}>/100</span>
                           </p>
                         </div>
                         <div style={{ textAlign: 'right' }}>

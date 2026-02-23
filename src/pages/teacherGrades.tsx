@@ -358,7 +358,7 @@ export default function TeacherGradesPage() {
                                       </span>
                                     ))}
                                   </div>
-                                  <span className="avg-purple">Avg: {average.toFixed(1)}%</span>
+                                  <span className="avg-purple">Avg: {average.toFixed(1)}/100</span>
                                 </>
                               )}
                             </div>
@@ -454,9 +454,13 @@ export default function TeacherGradesPage() {
 
                     const getLetterGrade = (percentage: number): string => {
                       if (percentage >= 85) return 'A';
+                      if (percentage >= 80) return 'A-';
                       if (percentage >= 75) return 'B';
+                      if (percentage >= 70) return 'B-';
                       if (percentage >= 65) return 'C';
-                      if (percentage >= 50) return 'D';
+                      if (percentage >= 60) return 'C-';
+                      if (percentage >= 55) return 'D';
+                      if (percentage >= 50) return 'D-';
                       return 'F';
                     };
 
@@ -490,7 +494,7 @@ export default function TeacherGradesPage() {
                         <td className="td-g" style={{ textAlign: 'center' }}>
                           {gradeItems.length > 0 ? (
                             <span className="avg-purple" style={{ fontSize: '16px' }}>
-                              {average.toFixed(1)}%
+                              {average.toFixed(1)}/100
                             </span>
                           ) : (
                             <span style={{ color: '#9ca3af' }}>-</span>

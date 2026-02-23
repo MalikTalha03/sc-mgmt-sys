@@ -3137,10 +3137,9 @@ select.form-input {
 
 .course-tabs {
   display: flex;
-  gap: 4px;
-  padding: 0 0 16px 0;
+  gap: 8px;
+  padding: 16px 20px;
   border-bottom: 2px solid #e5e7eb;
-  margin-bottom: 16px;
   flex-wrap: wrap;
 }
 
@@ -3197,11 +3196,6 @@ select.form-input {
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   overflow: hidden;
-  margin-bottom: 20px;
-}
-
-.semester-results-group:last-child {
-  margin-bottom: 0;
 }
 
 .semester-results-header {

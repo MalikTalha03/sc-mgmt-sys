@@ -377,7 +377,7 @@ export default function StudentPage() {
 
         {/* Academic Results — completed courses grouped by semester */}
         {enrollments.some(e => e.status === 'completed') && (
-          <div className="table-container">
+          <div className="table-container" style={{ marginTop: '24px' }}>
             <div className="card-header-row">
               <h2 className="card-title">Academic Results</h2>
             </div>
@@ -400,7 +400,9 @@ export default function StudentPage() {
                 return (a as number) - (b as number);
               });
 
-              return sortedKeys.map(semKey => {
+              return (
+                <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {sortedKeys.map(semKey => {
                 const semEnrollments = semesterMap.get(semKey)!;
 
                 // Calculate semester GPA (credit-weighted)
@@ -491,7 +493,9 @@ export default function StudentPage() {
                     </table>
                   </div>
                 );
-              });
+                })}
+                </div>
+              );
             })()}
           </div>
         )}

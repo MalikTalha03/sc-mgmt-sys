@@ -5,6 +5,7 @@ import { enrollmentService, type Enrollment } from "../services/enrollment.servi
 import { gradeService, type Grade, type GradeItem } from "../services/grade.service";
 import { courseService, type Course } from "../services/course.service";
 import { type Department } from "../services/department.service";
+import { calculateTotalFromItems, calculateGPA } from "../utils/gradeCalculations";
 import { Loader2, GraduationCap, BookOpen, Trophy, Calendar, X, FileText, Plus } from "lucide-react";
 
 export default function StudentPage() {
@@ -72,13 +73,7 @@ export default function StudentPage() {
   const calculateGradeTotal = (gradeId: number): number => {
     const items = gradeItems.filter(gi => gi.grade_id === gradeId);
     if (items.length === 0) return 0;
-    
-    const total = items.reduce((sum, item) => {
-      const percentage = (item.obtained_marks / item.max_marks) * 100;
-      return sum + percentage;
-    }, 0);
-    
-    return total / items.length;
+    return calculateTotalFromItems(items);
   };
 
   const getLetterGrade = (percentage: number): string => {
@@ -149,7 +144,7 @@ export default function StudentPage() {
   }
 
   const cgpa = grades.length > 0 ? 
-    grades.reduce((sum, grade) => sum + (calculateGradeTotal(grade.id) / 25), 0) / grades.length : 
+    grades.reduce((sum, grade) => sum + calculateGPA(calculateGradeTotal(grade.id)), 0) / grades.length : 
     null;
 
   return (

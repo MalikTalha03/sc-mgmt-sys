@@ -22,6 +22,7 @@ export default function StudentPage() {
   const [showGradeDetails, setShowGradeDetails] = useState(false);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [requesting, setRequesting] = useState(false);
+  const [courseTab, setCourseTab] = useState<'enrolled' | 'completed' | 'rejected'>('enrolled');
   const toast = useToast();
 
   useEffect(() => {
@@ -250,7 +251,7 @@ export default function StudentPage() {
           </div>
         </div>
 
-        {/* Enrollments List */}
+        {/* My Courses - Tabbed */}
         <div className="table-container">
           <div className="card-header-row">
             <h2 className="card-title">My Courses</h2>
@@ -259,71 +260,241 @@ export default function StudentPage() {
               Request Enrollment
             </button>
           </div>
-          {enrollments.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px', color: '#6b7280' }}>
-              <BookOpen size={40} style={{ margin: '0 auto 12px', opacity: 0.5 }} />
-              <p style={{ margin: 0 }}>No enrollments found</p>
-            </div>
-          ) : (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th className="th">Course</th>
-                  <th className="th">Credits</th>
-                  <th className="th">Status</th>
-                  <th className="th">Grade</th>
-                  <th className="th">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {enrollments.map((enrollment) => {
-                  const grade = getGradeForEnrollment(enrollment.id);
-                  const gradeTotal = grade ? calculateGradeTotal(grade.id) : null;
-                  const letterGrade = gradeTotal !== null ? getLetterGrade(gradeTotal) : null;
-                  const courseGradeItems = enrollment.course?.id ? getGradeItemsForCourse(enrollment.course.id) : [];
-                  const statusClass =
-                    enrollment.status === 'approved' ? 'enrollment-status-approved' :
-                    enrollment.status === 'completed' ? 'enrollment-status-completed' :
-                    'enrollment-status-other';
 
-                  return (
-                    <tr key={enrollment.id}>
-                      <td className="td">
-                        <span className="font-medium text-primary">{enrollment.course?.title || 'N/A'}</span>
-                      </td>
-                      <td className="td">{enrollment.course?.credit_hours || 0} hrs</td>
-                      <td className="td">
-                        <span className={statusClass}>{enrollment.status}</span>
-                      </td>
-                      <td className="td">
-                        {letterGrade && gradeTotal !== null ? (
-                          <span style={{ fontWeight: '600', color: '#3b82f6' }}>
-                            {letterGrade}
-                            <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: '400', marginLeft: '4px' }}>
-                              ({calculateGPA(gradeTotal).toFixed(1)})
-                            </span>
-                          </span>
-                        ) : (
-                          <span className="text-sm-gray">Not graded</span>
+          {/* Tabs */}
+          <div className="course-tabs">
+            <button
+              className={`course-tab-btn${courseTab === 'enrolled' ? ' course-tab-active' : ''}`}
+              onClick={() => setCourseTab('enrolled')}
+            >
+              Currently Enrolled
+              <span className="course-tab-badge">
+                {enrollments.filter(e => e.status === 'approved' || e.status === 'pending').length}
+              </span>
+            </button>
+            <button
+              className={`course-tab-btn${courseTab === 'completed' ? ' course-tab-active' : ''}`}
+              onClick={() => setCourseTab('completed')}
+            >
+              Completed
+              <span className="course-tab-badge">
+                {enrollments.filter(e => e.status === 'completed').length}
+              </span>
+            </button>
+            <button
+              className={`course-tab-btn${courseTab === 'rejected' ? ' course-tab-active' : ''}`}
+              onClick={() => setCourseTab('rejected')}
+            >
+              Inactive
+              <span className="course-tab-badge">
+                {enrollments.filter(e => e.status === 'rejected' || e.status === 'dropped' || e.status === 'withdrawn').length}
+              </span>
+            </button>
+          </div>
+
+          {(() => {
+            const tabEnrollments =
+              courseTab === 'enrolled'
+                ? enrollments.filter(e => e.status === 'approved' || e.status === 'pending')
+                : courseTab === 'completed'
+                ? enrollments.filter(e => e.status === 'completed')
+                : enrollments.filter(e => e.status === 'rejected' || e.status === 'dropped' || e.status === 'withdrawn');
+
+            if (tabEnrollments.length === 0) {
+              return (
+                <div style={{ textAlign: 'center', padding: '60px', color: '#6b7280' }}>
+                  <BookOpen size={40} style={{ margin: '0 auto 12px', opacity: 0.5 }} />
+                  <p style={{ margin: 0 }}>
+                    {courseTab === 'enrolled' ? 'No active enrollments' : courseTab === 'completed' ? 'No completed courses yet' : 'No inactive enrollments'}
+                  </p>
+                </div>
+              );
+            }
+
+            return (
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th className="th">Course</th>
+                    <th className="th">Credits</th>
+                    <th className="th">Status</th>
+                    {(courseTab === 'enrolled' || courseTab === 'completed') && <th className="th">Grade</th>}
+                    <th className="th">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tabEnrollments.map((enrollment) => {
+                    const grade = getGradeForEnrollment(enrollment.id);
+                    const gradeTotal = grade ? calculateGradeTotal(grade.id) : null;
+                    const letterGrade = gradeTotal !== null ? getLetterGrade(gradeTotal) : null;
+                    const courseGradeItems = enrollment.course?.id ? getGradeItemsForCourse(enrollment.course.id) : [];
+                    const statusClass =
+                      enrollment.status === 'approved' ? 'enrollment-status-approved' :
+                      enrollment.status === 'completed' ? 'enrollment-status-completed' :
+                      'enrollment-status-other';
+
+                    return (
+                      <tr key={enrollment.id}>
+                        <td className="td">
+                          <span className="font-medium text-primary">{enrollment.course?.title || 'N/A'}</span>
+                        </td>
+                        <td className="td">{enrollment.course?.credit_hours || 0} hrs</td>
+                        <td className="td">
+                          <span className={statusClass}>{enrollment.status}</span>
+                        </td>
+                        {(courseTab === 'enrolled' || courseTab === 'completed') && (
+                          <td className="td">
+                            {letterGrade && gradeTotal !== null ? (
+                              <span style={{ fontWeight: '600', color: '#3b82f6' }}>
+                                {letterGrade}
+                                <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: '400', marginLeft: '4px' }}>
+                                  ({calculateGPA(gradeTotal).toFixed(1)})
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="text-sm-gray">Not graded</span>
+                            )}
+                          </td>
                         )}
-                      </td>
-                      <td className="td">
-                        <button
-                          onClick={() => handleViewGrades(enrollment)}
-                          className={courseGradeItems.length > 0 ? 'btn-sm-blue' : 'btn-sm-gray'}
-                          disabled={courseGradeItems.length === 0}
-                        >
-                          <FileText size={14} />
-                          View Details
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
+                        <td className="td">
+                          <button
+                            onClick={() => handleViewGrades(enrollment)}
+                            className={courseGradeItems.length > 0 ? 'btn-sm-blue' : 'btn-sm-gray'}
+                            disabled={courseGradeItems.length === 0}
+                          >
+                            <FileText size={14} />
+                            View Details
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            );
+          })()}
         </div>
+
+        {/* Academic Results — completed courses grouped by semester */}
+        {enrollments.some(e => e.status === 'completed') && (
+          <div className="table-container">
+            <div className="card-header-row">
+              <h2 className="card-title">Academic Results</h2>
+            </div>
+
+            {(() => {
+              const completedEnrollments = enrollments.filter(e => e.status === 'completed');
+
+              // Group by semester (fall back to '?' if missing)
+              const semesterMap = new Map<number | string, Enrollment[]>();
+              completedEnrollments.forEach(e => {
+                const key = e.semester ?? 'Unknown';
+                if (!semesterMap.has(key)) semesterMap.set(key, []);
+                semesterMap.get(key)!.push(e);
+              });
+
+              // Sort by semester number ascending; 'Unknown' goes last
+              const sortedKeys = Array.from(semesterMap.keys()).sort((a, b) => {
+                if (a === 'Unknown') return 1;
+                if (b === 'Unknown') return -1;
+                return (a as number) - (b as number);
+              });
+
+              return sortedKeys.map(semKey => {
+                const semEnrollments = semesterMap.get(semKey)!;
+
+                // Calculate semester GPA (credit-weighted)
+                let semWeightedSum = 0;
+                let semTotalCredits = 0;
+                semEnrollments.forEach(e => {
+                  const grade = grades.find(g => g.course_id === e.course_id);
+                  if (!grade) return;
+                  const total = calculateGradeTotal(grade.id);
+                  const gpa = calculateGPA(total);
+                  const credits = e.course?.credit_hours ?? 0;
+                  semWeightedSum += gpa * credits;
+                  semTotalCredits += credits;
+                });
+                const semGPA = semTotalCredits > 0 ? semWeightedSum / semTotalCredits : null;
+
+                return (
+                  <div key={String(semKey)} className="semester-results-group">
+                    <div className="semester-results-header">
+                      <span className="semester-results-title">
+                        {semKey === 'Unknown' ? 'Semester Unknown' : `Semester ${semKey}`}
+                      </span>
+                      {semGPA !== null && (
+                        <span className="semester-gpa-badge">
+                          Semester GPA: <strong>{semGPA.toFixed(2)}</strong>
+                        </span>
+                      )}
+                    </div>
+                    <table className="data-table" style={{ marginBottom: 0 }}>
+                      <thead>
+                        <tr>
+                          <th className="th">Course</th>
+                          <th className="th">Credits</th>
+                          <th className="th">Score</th>
+                          <th className="th">Letter Grade</th>
+                          <th className="th">GPA Points</th>
+                          <th className="th">Details</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {semEnrollments.map(e => {
+                          const grade = grades.find(g => g.course_id === e.course_id);
+                          const total = grade ? calculateGradeTotal(grade.id) : null;
+                          const letter = total !== null ? getLetterGrade(total) : null;
+                          const gpaPoints = total !== null ? calculateGPA(total) : null;
+                          const courseGradeItems = e.course?.id ? getGradeItemsForCourse(e.course.id) : [];
+                          return (
+                            <tr key={e.id}>
+                              <td className="td">
+                                <span className="font-medium text-primary">{e.course?.title || 'N/A'}</span>
+                              </td>
+                              <td className="td">{e.course?.credit_hours ?? 0} hrs</td>
+                              <td className="td">
+                                {total !== null ? (
+                                  <span style={{ fontWeight: 600 }}>{total.toFixed(1)}/100</span>
+                                ) : (
+                                  <span className="text-sm-gray">—</span>
+                                )}
+                              </td>
+                              <td className="td">
+                                {letter ? (
+                                  <span className="enrollment-status-completed" style={{ fontWeight: 700 }}>{letter}</span>
+                                ) : (
+                                  <span className="text-sm-gray">—</span>
+                                )}
+                              </td>
+                              <td className="td">
+                                {gpaPoints !== null ? (
+                                  <span style={{ fontWeight: 600, color: '#6366f1' }}>{gpaPoints.toFixed(1)}</span>
+                                ) : (
+                                  <span className="text-sm-gray">—</span>
+                                )}
+                              </td>
+                              <td className="td">
+                                <button
+                                  onClick={() => handleViewGrades(e)}
+                                  className={courseGradeItems.length > 0 ? 'btn-sm-blue' : 'btn-sm-gray'}
+                                  disabled={courseGradeItems.length === 0}
+                                >
+                                  <FileText size={14} />
+                                  View
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              });
+            })()}
+          </div>
+        )}
 
         {/* Grade Details Modal */}
         {showGradeDetails && selectedEnrollment && (

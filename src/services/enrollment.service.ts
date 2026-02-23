@@ -9,6 +9,7 @@ export interface Enrollment {
   student_id: number;
   course_id: number;
   status: EnrollmentStatus;
+  semester?: number;
   created_at: string;
   updated_at: string;
   student?: Student;

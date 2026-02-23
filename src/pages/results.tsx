@@ -4,7 +4,7 @@ import { studentService, type Student } from "../services/student.service";
 import { enrollmentService, type Enrollment } from "../services/enrollment.service";
 import { gradeService, type Grade, type GradeItem } from "../services/grade.service";
 import { calculateTotalFromItems, calculateGPA } from "../utils/gradeCalculations";
-import { Loader2, GraduationCap, Trophy, FileText, X, BookOpen } from "lucide-react";
+import { Loader2, GraduationCap, Trophy, FileText, X } from "lucide-react";
 import { useToast } from "../context/ToastContext";
 
 export default function ResultsPage() {

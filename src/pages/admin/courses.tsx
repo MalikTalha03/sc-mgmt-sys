@@ -14,6 +14,7 @@ import {
 import { courseService, type Course } from "../../services/course.service";
 import { departmentService, type Department } from "../../services/department.service";
 import { teacherService, type Teacher } from "../../services/teacher.service";
+import { useToast } from "../../context/ToastContext";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -34,6 +35,7 @@ export default function AdminCoursesPage() {
     credit_hours: "3",
     teacher_id: ""
   });
+  const toast = useToast();
 
   useEffect(() => {
     loadData();
@@ -83,13 +85,13 @@ export default function AdminCoursesPage() {
 
   const handleCreateCourse = async () => {
     if (!courseFormData.title || !courseFormData.department_id || !courseFormData.teacher_id) {
-      alert("Please fill all required fields");
+      toast.warning("Please fill all required fields");
       return;
     }
 
     const creditHours = parseInt(courseFormData.credit_hours);
     if (creditHours < 1 || creditHours > 4) {
-      alert("Credit hours must be between 1 and 4");
+      toast.warning("Credit hours must be between 1 and 4");
       return;
     }
 
@@ -100,22 +102,22 @@ export default function AdminCoursesPage() {
         credit_hours: creditHours,
         teacher_id: parseInt(courseFormData.teacher_id)
       } as any);
-      alert("Course created successfully!");
+      toast.success("Course created successfully!");
       setShowAddModal(false);
       setCourseFormData({ title: "", department_id: "", credit_hours: "3", teacher_id: "" });
       loadData();
     } catch (error: any) {
-      alert(error.message || "Failed to create course");
+      toast.error(error.message || "Failed to create course");
     }
   };
 
   const handleDeleteCourse = async (courseId: number) => {
-    if (!confirm("Delete this course?")) return;
+    if (!await toast.confirm("Delete this course?")) return;
     try {
       await courseService.delete(courseId);
       loadData();
     } catch (error: any) {
-      alert(error.message || "Failed to delete course");
+      toast.error(error.message || "Failed to delete course");
     }
   };
 
@@ -127,7 +129,7 @@ export default function AdminCoursesPage() {
 
   const handleSubmitReassign = async () => {
     if (!selectedCourse || !selectedTeacherId) {
-      alert("Please select a teacher");
+      toast.warning("Please select a teacher");
       return;
     }
 
@@ -135,13 +137,13 @@ export default function AdminCoursesPage() {
       await courseService.update(selectedCourse.id, {
         teacher_id: parseInt(selectedTeacherId)
       });
-      alert("Teacher reassigned successfully!");
+      toast.success("Teacher reassigned successfully!");
       setShowReassignModal(false);
       setSelectedCourse(null);
       setSelectedTeacherId("");
       loadData();
     } catch (error: any) {
-      alert(error.message || "Failed to reassign teacher");
+      toast.error(error.message || "Failed to reassign teacher");
     }
   };
 

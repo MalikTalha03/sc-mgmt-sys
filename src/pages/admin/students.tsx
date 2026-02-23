@@ -3,6 +3,7 @@ import { studentService, type Student } from "../../services/student.service";
 import { departmentService, type Department } from "../../services/department.service";
 import { Loader2, GraduationCap, Search, Trash2, BookOpen, Plus, X } from "lucide-react";
 import { Button } from "../../components/button";
+import { useToast } from "../../context/ToastContext";
 
 export default function AdminStudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -14,6 +15,7 @@ export default function AdminStudentsPage() {
     name: "",
     department_id: ""
   });
+  const toast = useToast();
 
   useEffect(() => {
     loadData();
@@ -30,7 +32,7 @@ export default function AdminStudentsPage() {
       setDepartments(deptsData);
     } catch (error) {
       console.error("Error loading data:", error);
-      alert("Failed to load data");
+      toast.error("Failed to load data");
     } finally {
       setLoading(false);
     }
@@ -51,21 +53,21 @@ export default function AdminStudentsPage() {
   };
 
   const handleDeleteStudent = async (studentId: number) => {
-    if (!confirm("Are you sure you want to delete this student?")) return;
+    if (!await toast.confirm("Are you sure you want to delete this student?")) return;
     
     try {
       await studentService.delete(studentId);
-      alert("Student deleted successfully!");
+      toast.success("Student deleted successfully!");
       loadData();
     } catch (error: any) {
       console.error("Error deleting student:", error);
-      alert(error.message || "Failed to delete student");
+      toast.error(error.message || "Failed to delete student");
     }
   };
 
   const handleCreateStudent = async () => {
     if (!formData.name || !formData.department_id) {
-      alert("Please fill all fields");
+      toast.warning("Please fill all fields");
       return;
     }
 
@@ -76,13 +78,13 @@ export default function AdminStudentsPage() {
         semester: 1, // Always start at semester 1
         user_id: 0 // placeholder, backend will create user
       } as any);
-      alert("Student created successfully! Email will be auto-generated.");
+      toast.success("Student created! Login email has been auto-generated.");
       setShowAddModal(false);
       setFormData({ name: "", department_id: "" });
       loadData();
     } catch (error: any) {
       console.error("Error creating student:", error);
-      alert(error.message || "Failed to create student");
+      toast.error(error.message || "Failed to create student");
     }
   };
 

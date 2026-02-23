@@ -6,6 +6,7 @@ import { courseService, type Course } from "../services/course.service";
 import { type Department } from "../services/department.service";
 import { enrollmentService, type Enrollment } from "../services/enrollment.service";
 import { Loader2, Users, BookOpen, Building2, Edit2 } from "lucide-react";
+import { useToast } from "../context/ToastContext";
 
 export default function TeacherPage() {
   const { currentUser } = useAuth();
@@ -15,6 +16,7 @@ export default function TeacherPage() {
   const [allEnrollments, setAllEnrollments] = useState<Enrollment[]>([]);
   const [department, setDepartment] = useState<Department | null>(null);
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
 
   useEffect(() => {
     if (currentUser) {
@@ -30,7 +32,7 @@ export default function TeacherPage() {
       
       const teacherData = await teacherService.getByUserId(currentUser.id);
       if (!teacherData) {
-        alert("No teacher record found for this user");
+        toast.error("No teacher record found for this user");
         return;
       }
       setTeacher(teacherData);
@@ -46,7 +48,7 @@ export default function TeacherPage() {
       setDepartment(teacherData.department || null);
     } catch (error) {
       console.error("Error loading teacher data:", error);
-      alert("Failed to load teacher data");
+      toast.error("Failed to load teacher data");
     } finally {
       setLoading(false);
     }

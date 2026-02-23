@@ -7,6 +7,7 @@ import { courseService, type Course } from "../services/course.service";
 import { type Department } from "../services/department.service";
 import { calculateTotalFromItems, calculateGPA } from "../utils/gradeCalculations";
 import { Loader2, GraduationCap, BookOpen, Trophy, Calendar, X, FileText, Plus } from "lucide-react";
+import { useToast } from "../context/ToastContext";
 
 export default function StudentPage() {
   const { currentUser } = useAuth();
@@ -21,6 +22,7 @@ export default function StudentPage() {
   const [showGradeDetails, setShowGradeDetails] = useState(false);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [requesting, setRequesting] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     if (currentUser) {
@@ -36,7 +38,7 @@ export default function StudentPage() {
       
       const studentData = await studentService.getByUserId(currentUser.id);
       if (!studentData) {
-        alert("No student record found for this user");
+        toast.error("No student record found for this user");
         return;
       }
       setStudent(studentData);
@@ -60,7 +62,7 @@ export default function StudentPage() {
       setDepartment(studentData.department || null);
     } catch (error) {
       console.error("Error loading student data:", error);
-      alert("Failed to load student data");
+      toast.error("Failed to load student data");
     } finally {
       setLoading(false);
     }
@@ -117,11 +119,9 @@ export default function StudentPage() {
       const maxCredits = student.max_credit_per_semester ?? MAX_CREDIT_HOURS;
       if (currentCredits + course.credit_hours > maxCredits) {
         const remaining = maxCredits - currentCredits;
-        alert(
-          `Cannot request enrollment: credit hour limit exceeded.\n\n` +
-          `Current load (approved + pending): ${currentCredits}/${maxCredits} credit hours\n` +
-          `This course: ${course.credit_hours} credit hours\n` +
-          `Remaining capacity: ${Math.max(remaining, 0)} credit hours`
+        toast.warning(
+          `Credit limit exceeded — ${currentCredits + course.credit_hours}/${maxCredits} credit hrs needed. ` +
+          `Only ${Math.max(remaining, 0)} hr(s) remaining.`
         );
         return;
       }
@@ -130,11 +130,11 @@ export default function StudentPage() {
     try {
       setRequesting(true);
       await enrollmentService.requestEnrollment(courseId);
-      alert('Enrollment request submitted successfully! Waiting for admin approval.');
+      toast.success('Enrollment request submitted! Waiting for admin approval.');
       await loadStudentData();
     } catch (error: any) {
       console.error('Error requesting enrollment:', error);
-      alert(error.message || 'Failed to submit enrollment request');
+      toast.error(error.message || 'Failed to submit enrollment request');
     } finally {
       setRequesting(false);
     }
@@ -172,9 +172,19 @@ export default function StudentPage() {
     );
   }
 
-  const cgpa = grades.length > 0 ? 
-    grades.reduce((sum, grade) => sum + calculateGPA(calculateGradeTotal(grade.id)), 0) / grades.length : 
-    null;
+  // CGPA = Σ(GPA × creditHours) / Σ(creditHours) across all graded courses
+  const cgpa = (() => {
+    if (grades.length === 0) return null;
+    let weightedSum = 0;
+    let totalCredits = 0;
+    grades.forEach(grade => {
+      const creditHours = enrollments.find(e => e.course_id === grade.course_id)?.course?.credit_hours ?? 0;
+      const gpa = calculateGPA(calculateGradeTotal(grade.id));
+      weightedSum += gpa * creditHours;
+      totalCredits += creditHours;
+    });
+    return totalCredits > 0 ? weightedSum / totalCredits : 0;
+  })();
 
   return (
     <div className="page-bg">
@@ -286,8 +296,13 @@ export default function StudentPage() {
                         <span className={statusClass}>{enrollment.status}</span>
                       </td>
                       <td className="td">
-                        {letterGrade ? (
-                          <span style={{ fontWeight: '600', color: '#3b82f6' }}>{letterGrade}</span>
+                        {letterGrade && gradeTotal !== null ? (
+                          <span style={{ fontWeight: '600', color: '#3b82f6' }}>
+                            {letterGrade}
+                            <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: '400', marginLeft: '4px' }}>
+                              ({calculateGPA(gradeTotal).toFixed(1)})
+                            </span>
+                          </span>
                         ) : (
                           <span className="text-sm-gray">Not graded</span>
                         )}
@@ -370,8 +385,14 @@ export default function StudentPage() {
                         </div>
                         <div style={{ textAlign: 'right' }}>
                           <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 4px' }}>Letter Grade</p>
-                          <p style={{ fontSize: '28px', fontWeight: '700', color: '#111827', margin: 0 }}>
+                          <p style={{ fontSize: '28px', fontWeight: '700', color: '#111827', margin: '0 0 4px' }}>
                             {letterGrade}
+                          </p>
+                          <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>
+                            GPA:{' '}
+                            <span style={{ fontWeight: '600', color: '#111827' }}>
+                              {gradeTotal !== null ? calculateGPA(gradeTotal).toFixed(1) : '—'}
+                            </span>
                           </p>
                         </div>
                       </div>

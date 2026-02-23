@@ -13,6 +13,7 @@ import {
   Award,
   Ban
 } from "lucide-react";
+import { useToast } from "../../context/ToastContext";
 
 export default function AdminEnrollmentsPage() {
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
@@ -26,6 +27,7 @@ export default function AdminEnrollmentsPage() {
   const [selectedCourse, setSelectedCourse] = useState("");
   const [studentSearch, setStudentSearch] = useState("");
   const [courseSearch, setCourseSearch] = useState("");
+  const toast = useToast();
 
   useEffect(() => {
     loadData();
@@ -44,7 +46,7 @@ export default function AdminEnrollmentsPage() {
       setCourses(coursesData);
     } catch (error) {
       console.error("Error loading data:", error);
-      alert("Failed to load data");
+      toast.error("Failed to load data");
     } finally {
       setLoading(false);
     }
@@ -69,42 +71,42 @@ export default function AdminEnrollmentsPage() {
   const handleApprove = async (id: number) => {
     try {
       await enrollmentService.approve(id);
-      alert("Enrollment approved!");
+      toast.success("Enrollment approved!");
       loadData();
     } catch (error: any) {
-      alert(error.message || "Failed to approve enrollment");
+      toast.error(error.message || "Failed to approve enrollment");
     }
   };
 
   const handleReject = async (id: number) => {
-    if (!confirm("Are you sure you want to reject this enrollment request?")) return;
+    if (!await toast.confirm("Are you sure you want to reject this enrollment request?")) return;
     try {
       await enrollmentService.reject(id);
-      alert("Enrollment rejected");
+      toast.success("Enrollment rejected");
       loadData();
     } catch (error: any) {
-      alert(error.message || "Failed to reject enrollment");
+      toast.error(error.message || "Failed to reject enrollment");
     }
   };
 
   const handleComplete = async (id: number) => {
     try {
       await enrollmentService.complete(id);
-      alert("Enrollment marked as completed!");
+      toast.success("Enrollment marked as completed!");
       loadData();
     } catch (error: any) {
-      alert(error.message || "Failed to complete enrollment");
+      toast.error(error.message || "Failed to complete enrollment");
     }
   };
 
   const handleDrop = async (id: number) => {
-    if (!confirm("Are you sure you want to drop this student from the course?")) return;
+    if (!await toast.confirm("Are you sure you want to drop this student from the course?")) return;
     try {
       await enrollmentService.drop(id);
-      alert("Student dropped from course");
+      toast.success("Student dropped from course");
       loadData();
     } catch (error: any) {
-      alert(error.message || "Failed to drop enrollment");
+      toast.error(error.message || "Failed to drop enrollment");
     }
   };
 
@@ -112,7 +114,7 @@ export default function AdminEnrollmentsPage() {
 
   const handleCreateEnrollment = async () => {
     if (!selectedStudent || !selectedCourse) {
-      alert("Please select both student and course");
+      toast.warning("Please select both student and course");
       return;
     }
 
@@ -122,7 +124,7 @@ export default function AdminEnrollmentsPage() {
         course_id: parseInt(selectedCourse),
         status: 'approved' // Admin creates approved enrollments
       });
-      alert("Enrollment created successfully!");
+      toast.success("Enrollment created successfully!");
       setShowAddModal(false);
       setSelectedStudent("");
       setSelectedCourse("");
@@ -130,7 +132,7 @@ export default function AdminEnrollmentsPage() {
       setCourseSearch("");
       loadData();
     } catch (error: any) {
-      alert(error.message || "Failed to create enrollment");
+      toast.error(error.message || "Failed to create enrollment");
     }
   };
 

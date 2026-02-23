@@ -3,6 +3,7 @@ import { teacherService, type Teacher, type TeacherDesignation } from "../../ser
 import { departmentService, type Department } from "../../services/department.service";
 import { Loader2, Users, Search, Trash2, Plus, X } from "lucide-react";
 import { Button } from "../../components/button";
+import { useToast } from "../../context/ToastContext";
 
 export default function AdminTeachersPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -15,6 +16,7 @@ export default function AdminTeachersPage() {
     department_id: "",
     designation: "" as TeacherDesignation | ""
   });
+  const toast = useToast();
 
   useEffect(() => {
     loadData();
@@ -31,7 +33,7 @@ export default function AdminTeachersPage() {
       setDepartments(deptsData);
     } catch (error) {
       console.error("Error loading data:", error);
-      alert("Failed to load data");
+      toast.error("Failed to load data");
     } finally {
       setLoading(false);
     }
@@ -52,21 +54,21 @@ export default function AdminTeachersPage() {
   };
 
   const handleDeleteTeacher = async (teacherId: number) => {
-    if (!confirm("Are you sure you want to delete this teacher?")) return;
+    if (!await toast.confirm("Are you sure you want to delete this teacher?")) return;
     
     try {
       await teacherService.delete(teacherId);
-      alert("Teacher deleted successfully!");
+      toast.success("Teacher deleted successfully!");
       loadData();
     } catch (error: any) {
       console.error("Error deleting teacher:", error);
-      alert(error.message || "Failed to delete teacher");
+      toast.error(error.message || "Failed to delete teacher");
     }
   };
 
   const handleCreateTeacher = async () => {
     if (!formData.name || !formData.department_id || !formData.designation) {
-      alert("Please fill all fields");
+      toast.warning("Please fill all fields");
       return;
     }
 
@@ -77,13 +79,13 @@ export default function AdminTeachersPage() {
         designation: formData.designation as TeacherDesignation,
         user_id: 0 // placeholder, backend will create user
       } as any);
-      alert("Teacher created successfully! Email will be auto-generated.");
+      toast.success("Teacher created! Login email has been auto-generated.");
       setShowAddModal(false);
       setFormData({ name: "", department_id: "", designation: "" });
       loadData();
     } catch (error: any) {
       console.error("Error creating teacher:", error);
-      alert(error.message || "Failed to create teacher");
+      toast.error(error.message || "Failed to create teacher");
     }
   };
 

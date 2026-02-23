@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { departmentService, type Department } from "../../services/department.service";
+import { useToast } from "../../context/ToastContext";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -21,6 +22,7 @@ export default function AdminDepartmentsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     loadData();
@@ -67,17 +69,17 @@ export default function AdminDepartmentsPage() {
       setShowAddModal(false);
       loadData();
     } catch (error) {
-      alert("Failed to create department");
+      toast.error("Failed to create department");
     }
   };
 
   const handleDeleteDepartment = async (id: number) => {
-    if (!confirm("Delete this department? This will affect associated courses and users.")) return;
+    if (!await toast.confirm("Delete this department? This will affect associated courses and users.")) return;
     try {
       await departmentService.delete(id);
       loadData();
     } catch (error: any) {
-      alert(error.message || "Failed to delete department");
+      toast.error(error.message || "Failed to delete department");
     }
   };
 

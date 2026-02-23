@@ -37,12 +37,21 @@ export function calculateTotal(marks: GradeMarks): number {
 }
 
 /**
- * Calculate GPA from total marks (0-4.0 scale)
+ * Calculate GPA from total marks — returns a discrete standard point (4.0 scale).
+ * Maps to the same thresholds as the letter grade scale:
+ * A≥85→4.0, A-≥80→3.7, B≥75→3.3, B-≥70→3.0,
+ * C≥65→2.7, C-≥60→2.3, D≥55→2.0, D-≥50→1.7, F→0.0
  */
-export function calculateGPA(total: number): number {
-  // Convert percentage to 4.0 scale
-  const gpa = (total / 100) * 4.0;
-  return Math.max(0, Math.min(4.0, gpa));
+export function calculateGPA(percentage: number): number {
+  if (percentage >= 85) return 4.0;
+  if (percentage >= 80) return 3.7;
+  if (percentage >= 75) return 3.3;
+  if (percentage >= 70) return 3.0;
+  if (percentage >= 65) return 2.7;
+  if (percentage >= 60) return 2.3;
+  if (percentage >= 55) return 2.0;
+  if (percentage >= 50) return 1.7;
+  return 0.0;
 }
 
 /**

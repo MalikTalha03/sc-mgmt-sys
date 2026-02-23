@@ -7,6 +7,7 @@ import { enrollmentService, type Enrollment } from "../services/enrollment.servi
 import { gradeService, type Grade, type GradeItem, type GradeCategory } from "../services/grade.service";
 import { calculateTotalFromItems } from "../utils/gradeCalculations";
 import { Loader2, ArrowLeft, Plus, Save, X, Users } from "lucide-react";
+import { useToast } from "../context/ToastContext";
 
 export default function TeacherGradesPage() {
   const { currentUser } = useAuth();
@@ -25,6 +26,7 @@ export default function TeacherGradesPage() {
   const [maxMarks, setMaxMarks] = useState<number>(20);
   const [studentMarks, setStudentMarks] = useState<{ [key: number]: number }>({});
   const [saving, setSaving] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     if (currentUser) {
@@ -40,7 +42,7 @@ export default function TeacherGradesPage() {
       
       const teacherData = await teacherService.getByUserId(currentUser.id);
       if (!teacherData) {
-        alert("No teacher record found");
+        toast.error("No teacher record found");
         navigate('/teacher');
         return;
       }
@@ -54,7 +56,7 @@ export default function TeacherGradesPage() {
 
       // Verify teacher owns this course
       if (courseData.teacher_id !== teacherData.id) {
-        alert("You don't have permission to manage this course");
+        toast.error("You don't have permission to manage this course");
         navigate('/teacher');
         return;
       }
@@ -71,7 +73,7 @@ export default function TeacherGradesPage() {
       setAllGradeItems(gradeItemsData);
     } catch (error) {
       console.error("Error loading data:", error);
-      alert("Failed to load course data");
+      toast.error("Failed to load course data");
     } finally {
       setLoading(false);
     }
@@ -119,14 +121,14 @@ export default function TeacherGradesPage() {
       const studentsWithMarks = Object.entries(studentMarks).filter(([_, marks]) => marks !== undefined);
       
       if (studentsWithMarks.length === 0) {
-        alert("Please enter marks for at least one student");
+        toast.warning("Please enter marks for at least one student");
         return;
       }
 
       // Validate marks
       for (const [_, marks] of studentsWithMarks) {
         if (marks < 0 || marks > maxMarks) {
-          alert(`Invalid marks entered. Must be between 0 and ${maxMarks}`);
+          toast.warning(`Invalid marks entered. Must be between 0 and ${maxMarks}`);
           return;
         }
       }
@@ -146,7 +148,7 @@ export default function TeacherGradesPage() {
             return enrollment?.student?.user?.name || `Student ${studentId}`;
           }).join(', ');
           
-          alert(`Cannot add ${selectedCategory}: The following students already have a ${selectedCategory} entry:\n${studentNames}\n\nPlease remove their marks or choose a different category.`);
+          toast.error(`${selectedCategory} already exists for: ${studentNames}. Remove existing entries first.`);
           return;
         }
       }
@@ -184,16 +186,17 @@ export default function TeacherGradesPage() {
       }
 
       if (successCount > 0) {
-        alert(`Successfully added grades for ${successCount} student(s)!${errorMessages.length > 0 ? '\n\nErrors:\n' + errorMessages.join('\n') : ''}`);
+        toast.success(`Grades saved for ${successCount} student(s)!`);
+        errorMessages.forEach(msg => toast.error(msg));
         setShowAddForm(false);
         setStudentMarks({});
         await loadData(); // Reload data
       } else {
-        alert(`Failed to add grades.\n\nErrors:\n${errorMessages.join('\n')}`);
+        errorMessages.forEach(msg => toast.error(msg));
       }
     } catch (error) {
       console.error("Error saving grades:", error);
-      alert("An error occurred while saving grades");
+      toast.error("An error occurred while saving grades");
     } finally {
       setSaving(false);
     }

@@ -15,6 +15,7 @@ export const API_ENDPOINTS = {
   ENROLLMENTS: `${API_BASE_URL}/api/v1/enrollments`,
   GRADES: `${API_BASE_URL}/api/v1/grades`,
   GRADE_ITEMS: `${API_BASE_URL}/api/v1/grade_items`,
+  ANNOUNCE_RESULTS: `${API_BASE_URL}/api/v1/enrollments/announce_results`,
 };
 
 // Token management

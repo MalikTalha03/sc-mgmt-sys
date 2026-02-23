@@ -160,6 +160,23 @@ class EnrollmentService {
       throw new Error(error.error || 'Failed to delete enrollment');
     }
   }
+
+  async announceResults(): Promise<AnnounceResultsResponse> {
+    const response = await apiFetch(API_ENDPOINTS.ANNOUNCE_RESULTS, {
+      method: 'POST',
+    });
+    return response.json();
+  }
+}
+
+export interface AnnounceResultsResponse {
+  success: boolean;
+  message: string;
+  // success fields
+  promoted_count?: number;
+  completed_count?: number;
+  // failure fields
+  incomplete_courses?: { id: number; title: string; incomplete_count: number }[];
 }
 
 export const enrollmentService = new EnrollmentService();

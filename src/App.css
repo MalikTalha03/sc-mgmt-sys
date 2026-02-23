@@ -3176,3 +3176,145 @@ select.form-input {
   color: #6b7280;
   margin: 4px 0 0;
 }
+
+/* ============================================================
+   ANNOUNCE RESULTS
+   ============================================================ */
+
+.announce-results-card {
+  border: 2px solid #fde68a;
+  background: #fffbeb;
+}
+
+.btn-announce {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #f59e0b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-announce:hover {
+  background: #d97706;
+}
+
+.btn-announce:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+}
+
+.btn-spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Announce success modal body */
+.announce-success-body {
+  margin-top: 16px;
+}
+
+.announce-success-msg {
+  color: #15803d;
+  font-size: 15px;
+  font-weight: 500;
+  margin: 0 0 20px;
+}
+
+.announce-stats-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.announce-stat-box {
+  flex: 1;
+  min-width: 120px;
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.announce-stat-green {
+  background: #dcfce7;
+}
+
+.announce-stat-blue {
+  background: #dbeafe;
+}
+
+.announce-stat-num {
+  font-size: 32px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.announce-stat-label {
+  font-size: 13px;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* Announce failure modal body */
+.announce-fail-body {
+  margin-top: 16px;
+}
+
+.announce-fail-msg {
+  color: #b45309;
+  font-size: 15px;
+  font-weight: 500;
+  margin: 0 0 12px;
+}
+
+.announce-fail-subtitle {
+  color: #374151;
+  font-size: 14px;
+  margin: 0 0 12px;
+}
+
+.incomplete-courses-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.incomplete-course-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  gap: 12px;
+}
+
+.incomplete-course-item:last-child {
+  border-bottom: none;
+}
+
+.incomplete-course-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.incomplete-course-badge {
+  font-size: 12px;
+  font-weight: 500;
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}

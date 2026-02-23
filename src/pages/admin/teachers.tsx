@@ -144,7 +144,8 @@ export default function AdminTeachersPage() {
               <thead>
                 <tr>
                   <th className="th">ID</th>
-                  <th className="th">User ID</th>
+                  <th className="th">Name</th>
+                  <th className="th">Designation</th>
                   <th className="th">Department</th>
                   <th className="th th-right">Actions</th>
                 </tr>
@@ -160,6 +161,11 @@ export default function AdminTeachersPage() {
                         <div style={{ fontWeight: '500', color: '#111827' }}>{teacher.user?.name || teacher.user?.email || `User #${teacher.user_id}`}</div>
                         <div className="text-sm text-muted" style={{ marginTop: '2px' }}>{teacher.user?.email || 'No email'}</div>
                       </div>
+                    </td>
+                    <td className="td">
+                      <div style={{ fontWeight: '500', color: '#111827' }}>{
+                        teacher.designation.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+                        }</div>
                     </td>
                     <td className="td">
                       <div>

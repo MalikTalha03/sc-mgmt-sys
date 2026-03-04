@@ -81,7 +81,7 @@ export function calculateTotalFromItems(
   const quizzes    = items.filter(i => i.category === 'quiz');
   const midterm    = items.find(i => i.category === 'midterm');
   const final      = items.find(i => i.category === 'final');
-
+  // calculate percentage for each category, then apply weightage
   const pct = (obtained: number, max: number) => (max > 0 ? (obtained / max) * 100 : 0);
 
   const assignmentPct = assignments.length > 0
